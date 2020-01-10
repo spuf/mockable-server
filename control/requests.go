@@ -16,14 +16,26 @@ func (r *Requests) List(_ struct{}, reply *[]Request) error {
 	list := r.store.List()
 	res := make([]Request, len(list))
 	for i, msg := range list {
-		res[i] = Request{
-			Method:  msg.Request.Method,
-			Url:     msg.Request.Url,
-			Headers: FromHttpHeaders(msg.Headers),
-			Body:    msg.Body,
-		}
+		res[i] = RequestFromMessage(msg)
 	}
 
 	*reply = res
+	return nil
+}
+
+func (r *Requests) Pop(_ struct{}, reply *Request) error {
+	msg := r.store.PopFirst()
+	if msg != nil {
+		res := RequestFromMessage(*msg)
+		*reply = res
+	}
+
+	return nil
+}
+
+func (r *Requests) Clear(_ struct{}, reply *bool) error {
+	r.store.Clear()
+
+	*reply = true
 	return nil
 }
