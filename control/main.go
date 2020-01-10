@@ -1,6 +1,7 @@
 package control
 
 import (
+	"mockable-server/storage"
 	"net/http"
 	"strings"
 )
@@ -36,4 +37,13 @@ func FromHttpHeaders(h http.Header) Headers {
 	}
 
 	return headers
+}
+
+func RequestFromMessage(msg storage.Message) Request {
+	return Request{
+		Method:  msg.Request.Method,
+		Url:     msg.Request.Url,
+		Headers: FromHttpHeaders(msg.Headers),
+		Body:    msg.Body,
+	}
 }

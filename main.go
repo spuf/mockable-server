@@ -23,8 +23,8 @@ func main() {
 	var mockAddr string
 	var controlAddr string
 
-	flag.StringVar(&mockAddr, "mock-addr", ":8000", "Mock server address")
-	flag.StringVar(&controlAddr, "control-addr", ":8010", "Responses address")
+	flag.StringVar(&mockAddr, "mock-addr", ":8010", "Mock server address")
+	flag.StringVar(&controlAddr, "control-addr", ":8020", "Responses address")
 	flag.Parse()
 
 	done := make(chan struct{})
@@ -57,12 +57,6 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		res := queues.Responses.PopFirst()
-		if res == nil {
-			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
-			return
-		}
-
 		requestBody, _ := ioutil.ReadAll(r.Body)
 		queues.Requests.PushLast(storage.Message{
 			Headers: r.Header,
@@ -72,6 +66,12 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 				Url:    r.URL.RequestURI(),
 			},
 		})
+
+		res := queues.Responses.PopFirst()
+		if res == nil {
+			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+			return
+		}
 
 		for name, values := range res.Headers {
 			for _, value := range values {
