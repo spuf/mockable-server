@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"net/rpc"
 	"os"
 	"os/signal"
+	"strings"
 )
 
 type Queues struct {
@@ -24,7 +26,19 @@ func main() {
 	var controlAddr string
 
 	flag.StringVar(&mockAddr, "mock-addr", ":8010", "Mock server address")
-	flag.StringVar(&controlAddr, "control-addr", ":8020", "Responses address")
+	flag.StringVar(&controlAddr, "control-addr", ":8020", "Control server address")
+
+	flag.VisitAll(func(f *flag.Flag) {
+		envName := strings.ReplaceAll(strings.ToUpper(f.Name), "-", "_")
+		if envVal, ok := os.LookupEnv(envName); ok {
+			err := flag.Set(f.Name, envVal)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		f.Usage = fmt.Sprintf("%s [%s]", f.Usage, envName)
+	})
 	flag.Parse()
 
 	done := make(chan struct{})
