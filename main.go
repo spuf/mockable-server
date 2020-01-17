@@ -80,8 +80,7 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 		}
 
 		w.WriteHeader(res.Response.Status)
-		_, err := io.WriteString(w, res.Body)
-		if err != nil {
+		if _, err := io.WriteString(w, res.Body); err != nil {
 			logger.Fatal(err)
 		}
 	})
@@ -93,13 +92,10 @@ func newControlServer(addr string, queues *Queues) *server.Server {
 	logger := log.New(os.Stdout, "[control]\t", log.LstdFlags)
 
 	rpcServer := rpc.NewServer()
-	var err error
-	err = rpcServer.Register(control.NewResponses(queues.Responses))
-	if err != nil {
+	if err := rpcServer.Register(control.NewResponses(queues.Responses)); err != nil {
 		logger.Fatal("RPC register Responses error:", err)
 	}
-	err = rpcServer.Register(control.NewRequests(queues.Requests))
-	if err != nil {
+	if err := rpcServer.Register(control.NewRequests(queues.Requests)); err != nil {
 		logger.Fatal("RPC register Requests error:", err)
 	}
 

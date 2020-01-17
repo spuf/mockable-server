@@ -24,8 +24,7 @@ func (r *Requests) List(_ struct{}, reply *[]Request) error {
 }
 
 func (r *Requests) Pop(_ struct{}, reply *Request) error {
-	msg := r.store.PopFirst()
-	if msg != nil {
+	if msg := r.store.PopFirst(); msg != nil {
 		res := RequestFromMessage(*msg)
 		*reply = res
 	}
