@@ -22,5 +22,5 @@ RUN go build -o /go/binary
 
 FROM alpine:3.11
 COPY --from=builder /go/binary /usr/local/bin/mockable-server
-CMD ["mockable-server"]
+ENTRYPOINT ["mockable-server"]
 STOPSIGNAL SIGINT
