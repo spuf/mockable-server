@@ -21,8 +21,7 @@ Usage of mockable-server:
 
 ## Usage example
 
-docker-compose.yaml:
-
+docker-compose.yml:
 ```yaml
 services:
     mockable-server:
@@ -53,12 +52,47 @@ Show queue content:
     "params": []    
 }
 ``` 
+```json
+{
+    "id": null,
+    "result": [
+        {
+            "method": "GET",
+            "url": "/requested-path?n=v",
+            "headers": {
+                "Accept": "*/*",
+                "Accept-Encoding": "gzip, deflate",
+                "Connection": "keep-alive"
+            },
+            "body": ""
+        },
+        {
+            "method": "POST",
+            "url": "/requested-path",
+            "headers": {
+                "Accept": "*/*",
+                "Accept-Encoding": "gzip, deflate",
+                "Connection": "keep-alive",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            "body": "n=v"
+        }
+    ],
+    "error": null
+}
+``` 
 
 Clear queue content:
 ```json
 {
     "method": "Requests.Clear",
     "params": []    
+}
+```     
+```json
+{
+    "result": true,
+    "error": null
 }
 ``` 
 
@@ -69,6 +103,21 @@ Pop request:
     "params": []    
 }
 ```    
+```json
+{
+    "result": {
+        "method": "GET",
+        "url": "/requested-path?n=v",
+        "headers": {
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive"
+        },
+        "body": ""
+    },
+    "error": null
+}
+``` 
 
 ### Responses queue
 
@@ -77,6 +126,30 @@ Show queue content:
 {
     "method": "Responses.List",
     "params": []    
+}
+```    
+```json
+{
+    "id": null,
+    "result": [
+        {
+            "status": 200,
+            "headers": {
+                "Content-Type": "text/plain",
+                "Extra-Header": "value"
+            },
+            "body": "OK"
+        },
+        {
+            "status": 200,
+            "headers": {
+                "Content-Type": "text/plain",
+                "Extra-Header": "value"
+            },
+            "body": "OK"
+        }
+    ],
+    "error": null
 }
 ``` 
 
@@ -87,6 +160,12 @@ Clear queue content:
     "params": []        
 }
 ``` 
+```json
+{
+    "result": true,
+    "error": null
+}
+``` 
 
 Push response:
 ```json
@@ -95,9 +174,16 @@ Push response:
     "params": [{
         "code": 200,
         "headers": {
-            "Content-Type": "text/plain"
+            "Content-Type": "text/plain",
+            "Extra-Header": "value"
         },
         "body": "OK"
     }]    
+}              
+``` 
+```json
+{
+    "result": true,
+    "error": null
 }
 ``` 
