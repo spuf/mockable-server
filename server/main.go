@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -56,9 +57,10 @@ func NewServer(addr string, handler http.Handler, logger *log.Logger) *Server {
 	})
 
 	httpServer := &http.Server{
-		Addr:     addr,
-		Handler:  loggableHandler,
-		ErrorLog: logger,
+		Addr:        addr,
+		Handler:     loggableHandler,
+		ErrorLog:    logger,
+		IdleTimeout: time.Minute,
 	}
 	server := &Server{
 		httpServer: httpServer,
@@ -68,19 +70,22 @@ func NewServer(addr string, handler http.Handler, logger *log.Logger) *Server {
 	return server
 }
 
-func (s *Server) ListenAndServe() {
+func (s *Server) ListenAndServe(onClose func()) {
 	s.logger.Println("Starting server to listen on", s.httpServer.Addr)
 
-	err := s.httpServer.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
-		s.logger.Fatalln("Could not listen:", err)
+	if err := s.httpServer.ListenAndServe(); err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			onClose()
+		} else {
+			s.logger.Fatalln("Could not listen:", err)
+		}
 	}
 }
 
 func (s *Server) Shutdown() {
 	s.logger.Println("Shutting down server")
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), s.httpServer.IdleTimeout)
 	defer cancel()
 
 	if err := s.httpServer.Shutdown(ctx); err != nil {
