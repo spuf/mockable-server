@@ -32,17 +32,20 @@ func NewServer(addr string, handler http.Handler, logger *log.Logger) *Server {
 			headers[name] = strings.Join(values, "; ")
 		}
 
-		requestBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
+		var body bytes.Buffer
+		if _, err := body.ReadFrom(r.Body); err != nil {
 			logger.Fatalln(err)
 		}
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
+		if err := r.Body.Close(); err != nil {
+			logger.Fatalln(err)
+		}
+		r.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
 
 		line, err := json.Marshal(logEntry{
 			Method:  r.Method,
 			URI:     r.URL.RequestURI(),
 			Headers: headers,
-			Body:    string(requestBody),
+			Body:    body.String(),
 		})
 		if err != nil {
 			logger.Fatalln(err)
