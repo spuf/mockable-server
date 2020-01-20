@@ -1,10 +1,13 @@
 package control
 
 import (
+	"errors"
 	"mockable-server/storage"
 	"net/http"
 	"strings"
 )
+
+var ErrValidation = errors.New("validation")
 
 type Headers map[string]string
 

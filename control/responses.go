@@ -1,7 +1,7 @@
 package control
 
 import (
-	"errors"
+	"fmt"
 	"mockable-server/storage"
 )
 
@@ -30,7 +30,7 @@ func (r *Responses) List(_ struct{}, reply *[]Response) error {
 
 func (r *Responses) Push(arg Response, reply *bool) error {
 	if arg.Status < 100 || arg.Status >= 600 {
-		return errors.New("status must be in [100; 599]")
+		return fmt.Errorf("%w: status %v must be in [100; 600)", ErrValidation, arg.Status)
 	}
 
 	r.store.PushLast(storage.Message{
