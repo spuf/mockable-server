@@ -83,8 +83,7 @@ func (s *Server) Shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	err := s.httpServer.Shutdown(ctx)
-	if err != nil {
+	if err := s.httpServer.Shutdown(ctx); err != nil {
 		s.logger.Fatalln("Could not gracefully shutdown the server:", err)
 	}
 }

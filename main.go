@@ -31,8 +31,7 @@ func main() {
 	flag.VisitAll(func(f *flag.Flag) {
 		envName := strings.ReplaceAll(strings.ToUpper(f.Name), "-", "_")
 		if envVal, ok := os.LookupEnv(envName); ok {
-			err := flag.Set(f.Name, envVal)
-			if err != nil {
+			if err := flag.Set(f.Name, envVal); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -83,7 +82,8 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 
 		res := queues.Responses.PopFirst()
 		if res == nil {
-			http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+			status := http.StatusNotImplemented
+			http.Error(w, http.StatusText(status), status)
 			return
 		}
 
@@ -117,8 +117,8 @@ func newControlServer(addr string, queues *Queues) *server.Server {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/rpc/1", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			status := http.StatusMethodNotAllowed
 			w.Header().Set("Allow", http.MethodPost)
+			status := http.StatusMethodNotAllowed
 			http.Error(w, http.StatusText(status), status)
 			return
 		}
