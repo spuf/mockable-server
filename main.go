@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 )
 
 type Queues struct {
@@ -40,7 +41,6 @@ func main() {
 	})
 	flag.Parse()
 
-	done := make(chan struct{})
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 
@@ -49,20 +49,27 @@ func main() {
 		Requests:  storage.NewStore(),
 	}
 
-	controlServer := newControlServer(controlAddr, queues)
-	mockServer := newMockServer(mockAddr, queues)
+	servers := []*server.Server{
+		newControlServer(controlAddr, queues),
+		newMockServer(mockAddr, queues),
+	}
 
 	go func() {
 		<-quit
-		controlServer.Shutdown()
-		mockServer.Shutdown()
-		close(done)
+		for _, srv := range servers {
+			go srv.Shutdown()
+		}
 	}()
 
-	go controlServer.ListenAndServe()
-	go mockServer.ListenAndServe()
+	wg := new(sync.WaitGroup)
+	for _, srv := range servers {
+		wg.Add(1)
+		go srv.ListenAndServe(func() {
+			wg.Done()
+		})
+	}
 
-	<-done
+	wg.Wait()
 }
 
 func newMockServer(addr string, queues *Queues) *server.Server {
