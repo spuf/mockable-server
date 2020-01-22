@@ -1,14 +1,10 @@
 package server
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -27,38 +23,9 @@ type logEntry struct {
 func NewServer(addr string, handler http.Handler, logger *log.Logger) *Server {
 	logger.Println("Initialize server")
 
-	loggableHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		headers := make(map[string]string, len(r.Header))
-		for name, values := range r.Header {
-			headers[name] = strings.Join(values, "; ")
-		}
-
-		var body bytes.Buffer
-		if _, err := body.ReadFrom(r.Body); err != nil {
-			logger.Fatalln(err)
-		}
-		if err := r.Body.Close(); err != nil {
-			logger.Fatalln(err)
-		}
-		r.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
-
-		line, err := json.Marshal(logEntry{
-			Method:  r.Method,
-			URI:     r.URL.RequestURI(),
-			Headers: headers,
-			Body:    body.String(),
-		})
-		if err != nil {
-			logger.Fatalln(err)
-		}
-		logger.Println(string(line))
-
-		handler.ServeHTTP(w, r)
-	})
-
 	httpServer := &http.Server{
 		Addr:        addr,
-		Handler:     loggableHandler,
+		Handler:     NewLoggerMiddleware(logger, handler),
 		ErrorLog:    logger,
 		IdleTimeout: time.Minute,
 	}
