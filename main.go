@@ -130,7 +130,7 @@ func newControlServer(addr string, queues *Queues) *server.Server {
 			return
 		}
 
-		jsonrpc.Handle(w, r)
+		jsonrpc.ServeHTTP(w, r)
 	})
 
 	return server.NewServer(addr, handler, logger)
