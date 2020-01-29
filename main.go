@@ -73,7 +73,7 @@ func main() {
 }
 
 func newMockServer(addr string, queues *Queues) *server.Server {
-	logger := log.New(os.Stdout, "[mock]\t", log.Lshortfile)
+	logger := log.New(os.Stdout, "[mock]\t", 0)
 
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -114,7 +114,7 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 }
 
 func newControlServer(addr string, queues *Queues) *server.Server {
-	logger := log.New(os.Stdout, "[control]\t", log.Lshortfile)
+	logger := log.New(os.Stdout, "[control]\t", 0)
 
 	rpcServer := rpc.NewServer()
 	if err := rpcServer.Register(control.NewResponses(queues.Responses)); err != nil {
