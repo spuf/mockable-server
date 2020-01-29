@@ -33,7 +33,7 @@ func main() {
 		envName := strings.ReplaceAll(strings.ToUpper(f.Name), "-", "_")
 		if envVal, ok := os.LookupEnv(envName); ok {
 			if err := flag.Set(f.Name, envVal); err != nil {
-				log.Fatal(err)
+				log.Fatalln(err)
 			}
 		}
 
@@ -102,7 +102,7 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 
 		w.WriteHeader(res.Response.Status)
 		if _, err := io.WriteString(w, res.Body); err != nil {
-			logger.Fatal(err)
+			logger.Fatalln(err)
 		}
 	})
 
@@ -114,10 +114,10 @@ func newControlServer(addr string, queues *Queues) *server.Server {
 
 	rpcServer := rpc.NewServer()
 	if err := rpcServer.Register(control.NewResponses(queues.Responses)); err != nil {
-		logger.Fatal("RPC register Responses error:", err)
+		logger.Fatalln("RPC register Responses error:", err)
 	}
 	if err := rpcServer.Register(control.NewRequests(queues.Requests)); err != nil {
-		logger.Fatal("RPC register Requests error:", err)
+		logger.Fatalln("RPC register Requests error:", err)
 	}
 
 	jsonrpc := control.NewJsonRPC(rpcServer)
