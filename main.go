@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mockable-server/control"
 	"mockable-server/server"
@@ -77,10 +77,14 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		requestBody, _ := ioutil.ReadAll(r.Body)
+		var body bytes.Buffer
+		if _, err := body.ReadFrom(r.Body); err != nil {
+			logger.Fatalln(err)
+		}
+
 		queues.Requests.PushLast(storage.Message{
 			Headers: r.Header,
-			Body:    string(requestBody),
+			Body:    body.String(),
 			Request: &storage.Request{
 				Method: r.Method,
 				Url:    r.URL.RequestURI(),
