@@ -172,7 +172,7 @@ Push response:
 {
     "method": "Responses.Push",
     "params": [{
-        "code": 200,
+        "status": 200,
         "headers": {
             "Content-Type": "text/plain",
             "Extra-Header": "value"
