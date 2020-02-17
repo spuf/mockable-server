@@ -23,11 +23,8 @@ type Queues struct {
 }
 
 func main() {
-	var mockAddr string
-	var controlAddr string
-
-	flag.StringVar(&mockAddr, "mock-addr", ":8010", "Mock server address")
-	flag.StringVar(&controlAddr, "control-addr", ":8020", "Control server address")
+	mockAddr := flag.String("mock-addr", ":8010", "Mock server address")
+	controlAddr := flag.String("control-addr", ":8020", "Control server address")
 
 	flag.VisitAll(func(f *flag.Flag) {
 		envName := strings.ReplaceAll(strings.ToUpper(f.Name), "-", "_")
@@ -50,8 +47,8 @@ func main() {
 	}
 
 	servers := []*server.Server{
-		newControlServer(controlAddr, queues),
-		newMockServer(mockAddr, queues),
+		server.NewServer(&http.Server{Addr: *controlAddr, Handler: newControlHandler(queues)}, log.New(os.Stdout, "[mock]\t", 0)),
+		server.NewServer(&http.Server{Addr: *mockAddr, Handler: newMockHandle(queues)}, log.New(os.Stdout, "[control]\t", 0)),
 	}
 
 	go func() {
@@ -72,14 +69,11 @@ func main() {
 	wg.Wait()
 }
 
-func newMockServer(addr string, queues *Queues) *server.Server {
-	logger := log.New(os.Stdout, "[mock]\t", 0)
-
-	handler := http.NewServeMux()
-	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+func newMockHandle(queues *Queues) http.Handler {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body bytes.Buffer
 		if _, err := body.ReadFrom(r.Body); err != nil {
-			logger.Fatalln(err)
+			log.Fatalln(err)
 		}
 
 		queues.Requests.PushLast(storage.Message{
@@ -106,22 +100,20 @@ func newMockServer(addr string, queues *Queues) *server.Server {
 
 		w.WriteHeader(res.Response.Status)
 		if _, err := io.WriteString(w, res.Body); err != nil {
-			logger.Fatalln(err)
+			log.Fatalln(err)
 		}
 	})
 
-	return server.NewServer(addr, handler, logger)
+	return handler
 }
 
-func newControlServer(addr string, queues *Queues) *server.Server {
-	logger := log.New(os.Stdout, "[control]\t", 0)
-
+func newControlHandler(queues *Queues) http.Handler {
 	rpcServer := rpc.NewServer()
 	if err := rpcServer.Register(control.NewResponses(queues.Responses)); err != nil {
-		logger.Fatalln("RPC register Responses error:", err)
+		log.Fatalln("RPC register Responses error:", err)
 	}
 	if err := rpcServer.Register(control.NewRequests(queues.Requests)); err != nil {
-		logger.Fatalln("RPC register Requests error:", err)
+		log.Fatalln("RPC register Requests error:", err)
 	}
 
 	jsonrpc := control.NewJsonRPC(rpcServer)
@@ -137,5 +129,5 @@ func newControlServer(addr string, queues *Queues) *server.Server {
 		jsonrpc.ServeHTTP(w, r)
 	})
 
-	return server.NewServer(addr, handler, logger)
+	return handler
 }
