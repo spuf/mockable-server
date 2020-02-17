@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"log"
+	"io/ioutil"
 	"mockable-server/storage"
 	"net/http"
 	"net/http/httptest"
@@ -12,15 +11,37 @@ import (
 	"testing"
 )
 
-func jsonEqual(a, b []byte) (bool, error) {
-	var j, j2 interface{}
-	if err := json.Unmarshal(a, &j); err != nil {
-		return false, err
+func jsonRpcCall(t *testing.T, handler http.Handler, request, expectedResponse string) {
+	t.Helper()
+
+	req := httptest.NewRequest("POST", "/rpc/1", strings.NewReader(request))
+	w := httptest.NewRecorder()
+
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	if res.StatusCode != 200 {
+		t.Fatalf("unexpected status: %d", res.StatusCode)
 	}
-	if err := json.Unmarshal(b, &j2); err != nil {
-		return false, err
+	contentType := res.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		t.Fatalf("unexpected Content-Type value: %s", contentType)
 	}
-	return reflect.DeepEqual(j2, j), nil
+
+	actualResponse, _ := ioutil.ReadAll(res.Body)
+	_ = res.Body.Close()
+
+	var actualResponseObject interface{}
+	if err := json.Unmarshal(actualResponse, &actualResponseObject); err != nil {
+		t.Fatalf("actual response body is invalid json: %s", actualResponse)
+	}
+	var expectedResponseObject interface{}
+	if err := json.Unmarshal([]byte(expectedResponse), &expectedResponseObject); err != nil {
+		t.Fatalf("expected response body is invalid json: %s", expectedResponse)
+	}
+	if !reflect.DeepEqual(actualResponseObject, expectedResponseObject) {
+		t.Fatalf("unexpected response: %s", actualResponse)
+	}
 }
 
 func TestFunctional(t *testing.T) {
@@ -29,13 +50,39 @@ func TestFunctional(t *testing.T) {
 		Requests:  storage.NewStore(),
 	}
 
-	controlServer := httptest.NewServer(newControlHandler(queues))
-	defer controlServer.Close()
+	controlHandler := newControlHandler(queues)
+	mockHandler := newMockHandle(queues)
 
-	mockServer := httptest.NewServer(newMockHandle(queues))
-	defer mockServer.Close()
+	{
+		req := httptest.NewRequest("GET", "/rpc/1", strings.NewReader(""))
+		w := httptest.NewRecorder()
 
-	if res, err := http.Post(controlServer.URL+"/rpc/1", "application/json", strings.NewReader(`
+		controlHandler.ServeHTTP(w, req)
+
+		res := w.Result()
+		if res.StatusCode != 405 {
+			t.Fatalf("unexpected status: %d", res.StatusCode)
+		}
+		allow := res.Header.Get("Allow")
+		if allow != "POST" {
+			t.Fatalf("unexpected allow value: %s", allow)
+		}
+
+		resBody, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		if string(resBody) != "Method Not Allowed\n" {
+			t.Fatalf("unexpected body: %s", resBody)
+		}
+	}
+
+	jsonRpcCall(t, controlHandler, `
+		{
+			"method": "Responses.Push",
+			"params": []    
+		}      
+	`, `{"id":null,"result":null,"error":"validation: status 0 must be in [100; 600)"}`)
+
+	jsonRpcCall(t, controlHandler, `
 		{
 			"method": "Responses.Push",
 			"params": [{
@@ -47,21 +94,68 @@ func TestFunctional(t *testing.T) {
 				"body": "OK"
 			}]    
 		}      
-	`)); err != nil {
-		log.Fatal(err)
-	} else {
-		var body bytes.Buffer
-		if _, err := body.ReadFrom(res.Body); err != nil {
-			t.Fatal(err)
+	`, `{"id":null,"result":true,"error":null}`)
+
+	jsonRpcCall(t, controlHandler, `
+		{
+			"method": "Responses.List",
+			"params": []    
+		}      
+	`, `{"id":null,"result":[{"status":200,"headers":{"Content-Type":"text/plain","Extra-Header":"value"},"body":"OK"}],"error":null}`)
+
+	{
+		req := httptest.NewRequest("PUT", "/path", strings.NewReader(`data`))
+		req.Header.Set("Content-Type", "raw/data")
+		w := httptest.NewRecorder()
+
+		mockHandler.ServeHTTP(w, req)
+
+		res := w.Result()
+		if res.StatusCode != 200 {
+			t.Fatalf("unexpected status: %d", res.StatusCode)
 		}
-		if err := res.Body.Close(); err != nil {
-			t.Fatal(err)
+		contentType := res.Header.Get("Content-Type")
+		if contentType != "text/plain" {
+			t.Fatalf("unexpected Content-Type value: %s", contentType)
+		}
+		extraHeader := res.Header.Get("Extra-Header")
+		if extraHeader != "value" {
+			t.Fatalf("unexpected Extra-Header value: %s", extraHeader)
 		}
 
-		if same, err := jsonEqual(body.Bytes(), []byte(`{"id":null,"result":true,"error":null}`)); err != nil {
-			t.Fatal(err)
-		} else if !same {
-			t.Fatalf("unexpected response: %s", body.String())
+		resBody, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+
+		if string(resBody) != "OK" {
+			t.Fatalf("unexpected body: %s", resBody)
 		}
 	}
+
+	jsonRpcCall(t, controlHandler, `
+		{
+			"method": "Requests.List",
+			"params": []    
+		}      
+	`, `{"id":null,"result":[{"method":"PUT","url":"/path","headers":{"Content-Type":"raw/data"},"body":"data"}],"error":null}`)
+
+	jsonRpcCall(t, controlHandler, `
+		{
+			"method": "Requests.Pop",
+			"params": []    
+		}      
+	`, `{"id":null,"result":{"method":"PUT","url":"/path","headers":{"Content-Type":"raw/data"},"body":"data"},"error":null}`)
+
+	jsonRpcCall(t, controlHandler, `
+		{
+			"method": "Responses.Clear",
+			"params": []    
+		}      
+	`, `{"id":null,"result":true,"error":null}`)
+
+	jsonRpcCall(t, controlHandler, `
+		{
+			"method": "Requests.Clear",
+			"params": []    
+		}      
+	`, `{"id":null,"result":true,"error":null}`)
 }
