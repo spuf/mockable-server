@@ -20,15 +20,17 @@ type logEntry struct {
 	Body    string
 }
 
-func NewServer(addr string, handler http.Handler, logger *log.Logger) *Server {
+func NewServer(httpServer *http.Server, logger *log.Logger) *Server {
 	logger.Println("Initialize server")
 
-	httpServer := &http.Server{
-		Addr:        addr,
-		Handler:     NewLoggerMiddleware(logger, handler),
-		ErrorLog:    logger,
-		IdleTimeout: time.Minute,
+	httpServer.Handler = NewLoggerMiddleware(logger, httpServer.Handler)
+	if httpServer.IdleTimeout == 0 {
+		httpServer.IdleTimeout = time.Minute
 	}
+	if httpServer.ErrorLog == nil {
+		httpServer.ErrorLog = logger
+	}
+
 	server := &Server{
 		httpServer: httpServer,
 		logger:     logger,
