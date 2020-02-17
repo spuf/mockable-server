@@ -11,7 +11,7 @@ import (
 
 func TestFunctional(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "Done")
+		_, _ = io.WriteString(w, "Done")
 	})
 
 	httpServer := httptest.NewUnstartedServer(handler)
