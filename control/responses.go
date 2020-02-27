@@ -2,7 +2,7 @@ package control
 
 import (
 	"fmt"
-	"mockable-server/storage"
+	"github.com/spuf/mockable-server/storage"
 )
 
 type Responses struct {

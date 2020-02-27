@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/spuf/mockable-server/storage"
 	"io/ioutil"
-	"mockable-server/storage"
 	"net/http"
 	"net/http/httptest"
 	"reflect"

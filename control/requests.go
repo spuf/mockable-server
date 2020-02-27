@@ -1,7 +1,7 @@
 package control
 
 import (
-	"mockable-server/storage"
+	"github.com/spuf/mockable-server/storage"
 )
 
 type Requests struct {
