@@ -67,16 +67,16 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	go func() {
+		defer cancel()
 		<-quit
-		cancel()
 	}()
 
 	wg := new(sync.WaitGroup)
 	for _, srv := range servers {
 		wg.Add(1)
 		go func(srv *http.Server) {
+			defer wg.Done()
 			middleware.ListenAndServeWithGracefulShutdown(ctx, srv)
-			wg.Done()
 		}(srv)
 	}
 	wg.Wait()
