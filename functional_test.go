@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/spuf/mockable-server/control"
+	"github.com/spuf/mockable-server/mock"
 	"github.com/spuf/mockable-server/storage"
 	"io/ioutil"
 	"net/http"
@@ -45,13 +47,30 @@ func jsonRpcCall(t *testing.T, handler http.Handler, request, expectedResponse s
 }
 
 func TestFunctional(t *testing.T) {
-	queues := &Queues{
-		Responses: storage.NewStore(),
-		Requests:  storage.NewStore(),
-	}
+	// @todo: use table testing like net/http/httptest/httptest_test.go:18
 
-	controlHandler := newControlHandler(queues)
-	mockHandler := newMockHandler(queues)
+	queues := storage.NewQueues()
+
+	controlHandler := control.NewHandler(queues)
+	mockHandler := mock.NewHandler(queues)
+
+	{
+		req := httptest.NewRequest("GET", "/", strings.NewReader(""))
+		w := httptest.NewRecorder()
+
+		controlHandler.ServeHTTP(w, req)
+
+		res := w.Result()
+		if res.StatusCode != 404 {
+			t.Fatalf("unexpected status: %d", res.StatusCode)
+		}
+
+		resBody, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		if string(resBody) != "Not Found\n" {
+			t.Fatalf("unexpected body: %s", resBody)
+		}
+	}
 
 	{
 		req := httptest.NewRequest("GET", "/rpc/1", strings.NewReader(""))

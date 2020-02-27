@@ -1,17 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"fmt"
 	"github.com/spuf/mockable-server/control"
 	"github.com/spuf/mockable-server/middleware"
+	"github.com/spuf/mockable-server/mock"
 	"github.com/spuf/mockable-server/storage"
-	"io"
 	"log"
 	"net/http"
-	"net/rpc"
 	"os"
 	"os/signal"
 	"strings"
@@ -20,13 +18,10 @@ import (
 
 var (
 	Application = "mockable-server"
-	Version     = ""
+	Version     string
+	mockAddr    string
+	controlAddr string
 )
-
-type Queues struct {
-	Responses storage.Store
-	Requests  storage.Store
-}
 
 func main() {
 	flag.Usage = func() {
@@ -34,8 +29,8 @@ func main() {
 		flag.PrintDefaults()
 	}
 
-	mockAddr := flag.String("mock-addr", ":8010", "Mock server address")
-	controlAddr := flag.String("control-addr", ":8020", "Control server address")
+	flag.StringVar(&mockAddr, "mock-addr", ":8010", "Mock server address")
+	flag.StringVar(&controlAddr, "control-addr", ":8020", "Control server address")
 
 	flag.VisitAll(func(f *flag.Flag) {
 		envName := strings.ReplaceAll(strings.ToUpper(f.Name), "-", "_")
@@ -49,23 +44,19 @@ func main() {
 	})
 	flag.Parse()
 
-	queues := &Queues{
-		Responses: storage.NewStore(),
-		Requests:  storage.NewStore(),
-	}
-
 	controlLogger := log.New(os.Stdout, "[control]\t", 0)
 	mockLogger := log.New(os.Stdout, "[mock]\t", 0)
 
+	queues := storage.NewQueues()
 	servers := []*http.Server{
 		&http.Server{
-			Addr:     *controlAddr,
-			Handler:  middleware.NewLoggerHandler(controlLogger, newControlHandler(queues)),
+			Addr:     controlAddr,
+			Handler:  middleware.NewLoggerHandler(controlLogger, control.NewHandler(queues)),
 			ErrorLog: controlLogger,
 		},
 		&http.Server{
-			Addr:     *mockAddr,
-			Handler:  middleware.NewLoggerHandler(mockLogger, newMockHandler(queues)),
+			Addr:     mockAddr,
+			Handler:  middleware.NewLoggerHandler(mockLogger, mock.NewHandler(queues)),
 			ErrorLog: mockLogger,
 		},
 	}
@@ -89,67 +80,4 @@ func main() {
 		}(srv)
 	}
 	wg.Wait()
-}
-
-func newMockHandler(queues *Queues) http.Handler {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body bytes.Buffer
-		if _, err := body.ReadFrom(r.Body); err != nil {
-			log.Fatalln(err)
-		}
-
-		queues.Requests.PushLast(storage.Message{
-			Headers: r.Header,
-			Body:    body.String(),
-			Request: &storage.Request{
-				Method: r.Method,
-				Url:    r.URL.RequestURI(),
-			},
-		})
-
-		res := queues.Responses.PopFirst()
-		if res == nil {
-			status := http.StatusNotImplemented
-			http.Error(w, http.StatusText(status), status)
-			return
-		}
-
-		for name, values := range res.Headers {
-			for _, value := range values {
-				w.Header().Add(name, value)
-			}
-		}
-
-		w.WriteHeader(res.Response.Status)
-		if _, err := io.WriteString(w, res.Body); err != nil {
-			log.Fatalln(err)
-		}
-	})
-
-	return handler
-}
-
-func newControlHandler(queues *Queues) http.Handler {
-	rpcServer := rpc.NewServer()
-	if err := rpcServer.Register(control.NewResponses(queues.Responses)); err != nil {
-		log.Fatalln("RPC register Responses error:", err)
-	}
-	if err := rpcServer.Register(control.NewRequests(queues.Requests)); err != nil {
-		log.Fatalln("RPC register Requests error:", err)
-	}
-
-	jsonrpc := control.NewJsonRPC(rpcServer)
-	handler := http.NewServeMux()
-	handler.HandleFunc("/rpc/1", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			w.Header().Set("Allow", http.MethodPost)
-			status := http.StatusMethodNotAllowed
-			http.Error(w, http.StatusText(status), status)
-			return
-		}
-
-		jsonrpc.ServeHTTP(w, r)
-	})
-
-	return handler
 }
