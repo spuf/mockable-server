@@ -51,7 +51,7 @@ func TestFunctional(t *testing.T) {
 	}
 
 	controlHandler := newControlHandler(queues)
-	mockHandler := newMockHandle(queues)
+	mockHandler := newMockHandler(queues)
 
 	{
 		req := httptest.NewRequest("GET", "/rpc/1", strings.NewReader(""))
