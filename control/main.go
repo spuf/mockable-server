@@ -2,7 +2,7 @@ package control
 
 import (
 	"errors"
-	"mockable-server/storage"
+	"github.com/spuf/mockable-server/storage"
 	"net/http"
 	"strings"
 )
