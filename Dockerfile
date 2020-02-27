@@ -19,7 +19,10 @@ RUN golangci-lint run ./...
 RUN go test ./...
 
 # build
-RUN go build -o /go/bin/app
+ARG version=""
+RUN go build \
+    -ldflags="-X main.Version=${version}" \
+    -o /go/bin/app
 
 ###
 FROM alpine:3.11
