@@ -1,4 +1,4 @@
-package server
+package middleware
 
 import (
 	"bytes"
@@ -9,19 +9,26 @@ import (
 	"strings"
 )
 
-type loggerMiddleware struct {
+type loggerHandler struct {
 	logger *log.Logger
 	next   http.Handler
 }
 
-func NewLoggerMiddleware(logger *log.Logger, next http.Handler) http.Handler {
-	return &loggerMiddleware{
+type logEntry struct {
+	Method  string
+	URI     string
+	Headers map[string]string
+	Body    string
+}
+
+func NewLoggerHandler(logger *log.Logger, next http.Handler) http.Handler {
+	return &loggerHandler{
 		logger: logger,
 		next:   next,
 	}
 }
 
-func (m *loggerMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m *loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	headers := make(map[string]string, len(r.Header))
 	for name, values := range r.Header {
 		headers[name] = strings.Join(values, "; ")
@@ -44,7 +51,7 @@ func (m *loggerMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	m.next.ServeHTTP(w, r)
 }
 
-func (m *loggerMiddleware) drainBody(r *http.Request) *bytes.Buffer {
+func (m *loggerHandler) drainBody(r *http.Request) *bytes.Buffer {
 	var body bytes.Buffer
 	if _, err := body.ReadFrom(r.Body); err != nil {
 		m.logger.Fatalln(err)

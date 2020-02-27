@@ -2,10 +2,11 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"github.com/spuf/mockable-server/control"
-	"github.com/spuf/mockable-server/server"
+	"github.com/spuf/mockable-server/middleware"
 	"github.com/spuf/mockable-server/storage"
 	"io"
 	"log"
@@ -48,38 +49,49 @@ func main() {
 	})
 	flag.Parse()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-
 	queues := &Queues{
 		Responses: storage.NewStore(),
 		Requests:  storage.NewStore(),
 	}
 
-	servers := []*server.Server{
-		server.NewServer(&http.Server{Addr: *controlAddr, Handler: newControlHandler(queues)}, log.New(os.Stdout, "[mock]\t", 0)),
-		server.NewServer(&http.Server{Addr: *mockAddr, Handler: newMockHandle(queues)}, log.New(os.Stdout, "[control]\t", 0)),
+	controlLogger := log.New(os.Stdout, "[control]\t", 0)
+	mockLogger := log.New(os.Stdout, "[mock]\t", 0)
+
+	servers := []*http.Server{
+		&http.Server{
+			Addr:     *controlAddr,
+			Handler:  middleware.NewLoggerHandler(controlLogger, newControlHandler(queues)),
+			ErrorLog: controlLogger,
+		},
+		&http.Server{
+			Addr:     *mockAddr,
+			Handler:  middleware.NewLoggerHandler(mockLogger, newMockHandler(queues)),
+			ErrorLog: mockLogger,
+		},
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
 	go func() {
 		<-quit
-		for _, srv := range servers {
-			go srv.Shutdown()
-		}
+		cancel()
 	}()
 
 	wg := new(sync.WaitGroup)
 	for _, srv := range servers {
 		wg.Add(1)
-		go srv.ListenAndServe(func() {
+		go func(srv *http.Server) {
+			middleware.ListenAndServeWithGracefulShutdown(ctx, srv)
 			wg.Done()
-		})
+		}(srv)
 	}
-
 	wg.Wait()
 }
 
-func newMockHandle(queues *Queues) http.Handler {
+func newMockHandler(queues *Queues) http.Handler {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body bytes.Buffer
 		if _, err := body.ReadFrom(r.Body); err != nil {
