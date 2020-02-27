@@ -17,12 +17,22 @@ import (
 	"sync"
 )
 
+var (
+	Application = "mockable-server"
+	Version     = ""
+)
+
 type Queues struct {
 	Responses storage.Store
 	Requests  storage.Store
 }
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s (%s):\n", Application, Version)
+		flag.PrintDefaults()
+	}
+
 	mockAddr := flag.String("mock-addr", ":8010", "Mock server address")
 	controlAddr := flag.String("control-addr", ":8020", "Control server address")
 
