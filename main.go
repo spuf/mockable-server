@@ -4,16 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/spuf/mockable-server/control"
-	"github.com/spuf/mockable-server/middleware"
-	"github.com/spuf/mockable-server/mock"
-	"github.com/spuf/mockable-server/storage"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
+
+	"github.com/spuf/mockable-server/control"
+	"github.com/spuf/mockable-server/middleware"
+	"github.com/spuf/mockable-server/mock"
+	"github.com/spuf/mockable-server/storage"
 )
 
 var (

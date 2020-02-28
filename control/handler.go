@@ -1,10 +1,11 @@
 package control
 
 import (
-	"github.com/spuf/mockable-server/storage"
 	"log"
 	"net/http"
 	"net/rpc"
+
+	"github.com/spuf/mockable-server/storage"
 )
 
 type control struct {

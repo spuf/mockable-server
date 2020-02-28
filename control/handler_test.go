@@ -2,13 +2,14 @@ package control
 
 import (
 	"encoding/json"
-	"github.com/spuf/mockable-server/storage"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/spuf/mockable-server/storage"
 )
 
 func TestHandlerJsonRpc1Url(t *testing.T) {

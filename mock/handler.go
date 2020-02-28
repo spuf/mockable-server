@@ -2,10 +2,11 @@ package mock
 
 import (
 	"bytes"
-	"github.com/spuf/mockable-server/storage"
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/spuf/mockable-server/storage"
 )
 
 type mock struct {
