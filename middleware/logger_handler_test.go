@@ -29,6 +29,6 @@ func TestLoggerHandler(t *testing.T) {
 
 	line := strings.TrimSpace(buffer.String())
 	if line != `{"Method":"POST","URI":"/path?query","Headers":{"Content-Type":"text/plain"},"Body":"OK"}` {
-		t.Fatalf("unexpected log: `%s`", line)
+		t.Errorf("unexpected log: `%s`", line)
 	}
 }
