@@ -24,7 +24,9 @@ func TestEmptyStoreNoPop(t *testing.T) {
 func TestStorePush(t *testing.T) {
 	store := NewStore(nil)
 	body := "body"
-	store.PushLast(Message{Body: body})
+	if err := store.PushLast(Message{Body: body}); err != nil {
+		t.Fatalf("PushLast: %v", err)
+	}
 
 	list := store.List()
 	if len(list) != 1 {
@@ -37,7 +39,9 @@ func TestStorePush(t *testing.T) {
 
 func TestStoreClear(t *testing.T) {
 	store := NewStore(nil)
-	store.PushLast(Message{})
+	if err := store.PushLast(Message{}); err != nil {
+		t.Fatalf("PushLast: %v", err)
+	}
 
 	store.Clear()
 
@@ -50,7 +54,9 @@ func TestStoreClear(t *testing.T) {
 func TestStorePop(t *testing.T) {
 	store := NewStore(nil)
 	body := "body"
-	store.PushLast(Message{Body: body})
+	if err := store.PushLast(Message{Body: body}); err != nil {
+		t.Fatalf("PushLast: %v", err)
+	}
 
 	msg := store.PopFirst()
 	if msg == nil {
@@ -63,7 +69,9 @@ func TestStorePop(t *testing.T) {
 
 func TestStorePopNil(t *testing.T) {
 	store := NewStore(nil)
-	store.PushLast(Message{})
+	if err := store.PushLast(Message{}); err != nil {
+		t.Fatalf("PushLast: %v", err)
+	}
 
 	store.PopFirst()
 
@@ -77,7 +85,9 @@ func TestStoreImmutability(t *testing.T) {
 	store := NewStore(nil)
 	origBody := "origBody"
 	origMsg := Message{Body: origBody}
-	store.PushLast(origMsg)
+	if err := store.PushLast(origMsg); err != nil {
+		t.Fatalf("PushLast: %v", err)
+	}
 
 	list := store.List()
 
@@ -108,7 +118,9 @@ func TestStoreLIFO(t *testing.T) {
 	store := NewStore(nil)
 
 	for i := 0; i < 5; i++ {
-		store.PushLast(Message{Body: strconv.Itoa(i)})
+		if err := store.PushLast(Message{Body: strconv.Itoa(i)}); err != nil {
+			t.Fatalf("PushLast: %v", err)
+		}
 	}
 
 	list := store.List()
