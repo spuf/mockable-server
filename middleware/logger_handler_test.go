@@ -5,20 +5,29 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
 func TestLoggerHandler(t *testing.T) {
-	var b bytes.Buffer
-	logger := log.New(&b, "Header:", 0)
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-	server := httptest.NewServer(NewLoggerHandler(logger, handler))
+	r := httptest.NewRequest(http.MethodPost, "/path?query", strings.NewReader("OK"))
+	w := httptest.NewRecorder()
 
-	defer server.Close()
+	var buffer bytes.Buffer
+	logger := log.New(&buffer, "", 0)
 
-	if _, err := http.Get(server.URL); err != nil {
-		t.Fatal(err)
+	noopHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+
+	handler := NewLoggerHandler(logger, noopHandler)
+	handler.ServeHTTP(w, r)
+
+	got := w.Result()
+	if got == nil {
+		t.Fatalf("unexpected Result")
 	}
 
-	// @todo: add assertions
+	line := strings.TrimSpace(buffer.String())
+	if line != `{"Method":"POST","URI":"/path?query","Headers":{},"Body":"OK"}` {
+		t.Fatalf("unexpected log: `%s`", line)
+	}
 }
