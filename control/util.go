@@ -3,9 +3,10 @@ package control
 import (
 	"errors"
 	"fmt"
-	"github.com/spuf/mockable-server/storage"
 	"net/http"
 	"strings"
+
+	"github.com/spuf/mockable-server/storage"
 )
 
 var ErrValidation = errors.New("validation")
