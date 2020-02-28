@@ -15,16 +15,15 @@ func NewResponses(store storage.Store) *Responses {
 
 func (r *Responses) List(_ struct{}, reply *[]Response) error {
 	list := r.store.List()
-	res := make([]Response, len(list))
-	for i, msg := range list {
-		res[i] = Response{
+	for _, msg := range list {
+		response := Response{
 			Status:  msg.Response.Status,
-			Headers: FromHttpHeaders(msg.Headers),
+			Headers: fromHttpHeaders(msg.Headers),
 			Body:    msg.Body,
 		}
+		*reply = append(*reply, response)
 	}
 
-	*reply = res
 	return nil
 }
 
@@ -33,19 +32,23 @@ func (r *Responses) Push(arg Response, reply *bool) error {
 		return fmt.Errorf("%w: status %v must be in [100; 600)", ErrValidation, arg.Status)
 	}
 
-	r.store.PushLast(storage.Message{
+	msg := storage.Message{
 		Headers:  arg.Headers.ToHttpHeaders(),
 		Body:     arg.Body,
 		Response: &storage.Response{Status: arg.Status},
-	})
+	}
+	if err := r.store.PushLast(msg); err != nil {
+		return err
+	}
 
 	*reply = true
+
 	return nil
 }
 
 func (r *Responses) Clear(_ struct{}, reply *bool) error {
 	r.store.Clear()
-
 	*reply = true
+
 	return nil
 }

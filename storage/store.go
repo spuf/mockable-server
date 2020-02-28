@@ -19,19 +19,36 @@ type Message struct {
 	Response *Response
 }
 
+func (m Message) IsRequest() bool {
+	return m.Request != nil && m.Response == nil
+}
+
+func (m Message) IsResponse() bool {
+	return m.Response != nil && m.Request == nil
+}
+
 type store struct {
-	items []*Message
+	items     []*Message
+	validator func(Message) error
 }
 
 type Store interface {
-	PushLast(message Message)
+	PushLast(message Message) error
 	PopFirst() *Message
 	List() []Message
 	Clear()
 }
 
-func (s *store) PushLast(message Message) {
+func (s *store) PushLast(message Message) error {
+	if s.validator != nil {
+		if err := s.validator(message); err != nil {
+			return err
+		}
+	}
+
 	s.items = append(s.items, &message)
+
+	return nil
 }
 
 func (s *store) PopFirst() *Message {
@@ -57,6 +74,6 @@ func (s *store) Clear() {
 	s.items = []*Message{}
 }
 
-func NewStore() Store {
-	return &store{}
+func NewStore(validator func(Message) error) Store {
+	return &store{validator: validator}
 }
