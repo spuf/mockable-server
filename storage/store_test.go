@@ -9,7 +9,7 @@ func TestNewStoreEmpty(t *testing.T) {
 	store := NewStore(nil)
 	list := store.List()
 	if len(list) != 0 {
-		t.Errorf("%v must be empty", list)
+		t.Errorf("%#v must be empty", list)
 	}
 }
 
@@ -17,7 +17,7 @@ func TestEmptyStoreNoPop(t *testing.T) {
 	store := NewStore(nil)
 	msg := store.PopFirst()
 	if msg != nil {
-		t.Errorf("%v must be nil", msg)
+		t.Errorf("%#v must be nil", msg)
 	}
 }
 
@@ -30,10 +30,10 @@ func TestStorePush(t *testing.T) {
 
 	list := store.List()
 	if len(list) != 1 {
-		t.Errorf("%v must contain one item", list)
+		t.Errorf("%#v must contain one item", list)
 	}
 	if list[0].Body != body {
-		t.Errorf("%v .Body must be equal to %v", list[0], body)
+		t.Errorf("%#v .Body must be equal to %v", list[0], body)
 	}
 }
 
@@ -47,7 +47,7 @@ func TestStoreClear(t *testing.T) {
 
 	list := store.List()
 	if len(list) != 0 {
-		t.Errorf("%v must be empty", list)
+		t.Errorf("%#v must be empty", list)
 	}
 }
 
@@ -60,10 +60,10 @@ func TestStorePop(t *testing.T) {
 
 	msg := store.PopFirst()
 	if msg == nil {
-		t.Errorf("%v must not be nil", msg)
+		t.Errorf("%#v must not be nil", msg)
 	}
 	if msg.Body != body {
-		t.Errorf("%v .Body must be equal to %v", msg, body)
+		t.Errorf("%#v .Body must be equal to %v", msg, body)
 	}
 }
 
@@ -77,7 +77,7 @@ func TestStorePopNil(t *testing.T) {
 
 	msg := store.PopFirst()
 	if msg != nil {
-		t.Errorf("%v must be nil", msg)
+		t.Errorf("%#v must be nil", msg)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestStoreImmutability(t *testing.T) {
 	list0Body := "list[0].Body"
 	list[0].Body = list0Body
 	if origMsg.Body != origBody {
-		t.Errorf("%v .Body must be equal to %v", origMsg, origBody)
+		t.Errorf("%#v .Body must be equal to %#v", origMsg, origBody)
 	}
 
 	msg := store.PopFirst()
@@ -102,15 +102,15 @@ func TestStoreImmutability(t *testing.T) {
 	msgBody := "msg.Body"
 	msg.Body = msgBody
 	if origMsg.Body != origBody {
-		t.Errorf("%v .Body must be equal to %v", origMsg, origBody)
+		t.Errorf("%#v .Body must be equal to %#v", origMsg, origBody)
 	}
 
 	origMsg.Body = "origMsg.Body"
 	if list[0].Body != list0Body {
-		t.Errorf("%v .Body must be equal to %v", list[0], list0Body)
+		t.Errorf("%#v .Body must be equal to %#v", list[0], list0Body)
 	}
 	if msg.Body != msgBody {
-		t.Errorf("%v .Body must be equal to %v", msg, msgBody)
+		t.Errorf("%#v .Body must be equal to %#v", msg, msgBody)
 	}
 }
 
@@ -126,14 +126,14 @@ func TestStoreLIFO(t *testing.T) {
 	list := store.List()
 	for i, msg := range list {
 		if msg.Body != strconv.Itoa(i) {
-			t.Errorf("%v .Body must be %d", msg, i)
+			t.Errorf("%#v .Body must be %d", msg, i)
 		}
 	}
 
 	for i := 0; i < 5; i++ {
 		msg := store.PopFirst()
 		if msg.Body != strconv.Itoa(i) {
-			t.Errorf("%v .Body must be %d", msg, i)
+			t.Errorf("%#v .Body must be %d", msg, i)
 		}
 	}
 }

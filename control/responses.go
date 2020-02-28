@@ -30,7 +30,7 @@ func (r *Responses) List(_ struct{}, reply *[]Response) error {
 
 func (r *Responses) Push(arg Response, reply *bool) error {
 	if arg.Status < 100 || arg.Status >= 600 {
-		return fmt.Errorf("%w: status %v must be in [100; 600)", ErrValidation, arg.Status)
+		return fmt.Errorf("%w: status %d must be in [100; 600)", ErrValidation, arg.Status)
 	}
 
 	msg := storage.Message{
