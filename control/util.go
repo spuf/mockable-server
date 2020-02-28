@@ -2,14 +2,13 @@ package control
 
 import (
 	"errors"
+	"fmt"
 	"github.com/spuf/mockable-server/storage"
 	"net/http"
 	"strings"
 )
 
 var ErrValidation = errors.New("validation")
-
-type Headers map[string]string
 
 type Response struct {
 	Status  int     `json:"status"`
@@ -24,6 +23,8 @@ type Request struct {
 	Body    string  `json:"body"`
 }
 
+type Headers map[string]string
+
 func (h *Headers) ToHttpHeaders() http.Header {
 	res := make(http.Header, len(*h))
 	for name, value := range *h {
@@ -33,7 +34,7 @@ func (h *Headers) ToHttpHeaders() http.Header {
 	return res
 }
 
-func FromHttpHeaders(h http.Header) Headers {
+func fromHttpHeaders(h http.Header) Headers {
 	headers := make(Headers, len(h))
 	for name, values := range h {
 		headers[name] = strings.Join(values, "; ")
@@ -42,11 +43,16 @@ func FromHttpHeaders(h http.Header) Headers {
 	return headers
 }
 
-func RequestFromMessage(msg storage.Message) Request {
-	return Request{
+func requestFromMessage(msg storage.Message) (*Request, error) {
+	if !msg.IsRequest() {
+		return nil, fmt.Errorf("%#v is not request", msg)
+	}
+
+	request := Request{
 		Method:  msg.Request.Method,
 		Url:     msg.Request.Url,
-		Headers: FromHttpHeaders(msg.Headers),
+		Headers: fromHttpHeaders(msg.Headers),
 		Body:    msg.Body,
 	}
+	return &request, nil
 }

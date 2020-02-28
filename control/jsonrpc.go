@@ -2,7 +2,6 @@ package control
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"net/rpc"
 	"net/rpc/jsonrpc"
@@ -38,7 +37,5 @@ func (j *jsonRPC) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	codec := jsonrpc.NewServerCodec(&readWriteCloser{r.Body, w})
 	defer codec.Close()
 
-	if err := j.server.ServeRequest(codec); err != nil {
-		log.Println("RPC serve request error:", err)
-	}
+	_ = j.server.ServeRequest(codec)
 }
