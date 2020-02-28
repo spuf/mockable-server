@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -45,8 +46,12 @@ func main() {
 	})
 	flag.Parse()
 
-	controlLogger := log.New(os.Stdout, "[control]\t", 0)
-	mockLogger := log.New(os.Stdout, "[mock]\t", 0)
+	logFlags := log.LstdFlags | log.Lmsgprefix
+	if Version == "" {
+		logFlags = logFlags | log.Lshortfile
+	}
+	controlLogger := log.New(os.Stdout, "[control] ", logFlags)
+	mockLogger := log.New(os.Stdout, "[mock] ", logFlags)
 
 	queues := storage.NewQueues()
 	servers := [...]*http.Server{
@@ -77,7 +82,25 @@ func main() {
 		wg.Add(1)
 		go func(srv *http.Server) {
 			defer wg.Done()
-			middleware.ListenAndServeWithGracefulShutdown(ctx, srv)
+
+			srv.RegisterOnShutdown(func() {
+				if srv.ErrorLog != nil {
+					srv.ErrorLog.Println("Shutting down server")
+				}
+			})
+
+			onListen := func(addr net.Addr) {
+				if srv.ErrorLog != nil {
+					srv.ErrorLog.Println("Server is listening on", addr.String())
+				}
+			}
+
+			if err := middleware.ListenAndServeWithGracefulShutdown(ctx, srv, onListen); err != nil {
+				defer cancel()
+				if srv.ErrorLog != nil {
+					srv.ErrorLog.Println(err)
+				}
+			}
 		}(srv)
 	}
 	wg.Wait()
