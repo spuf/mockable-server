@@ -23,7 +23,7 @@ func (r *Requests) List(_ struct{}, reply *[]Request) error {
 	return nil
 }
 
-func (r *Requests) Pop(_ struct{}, reply *Request) error {
+func (r *Requests) Pop(_ struct{}, reply *interface{}) error {
 	if msg := r.store.PopFirst(); msg != nil {
 		res := RequestFromMessage(*msg)
 		*reply = res
