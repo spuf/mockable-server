@@ -11,6 +11,7 @@ import (
 
 func TestLoggerHandler(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/path?query", strings.NewReader("OK"))
+	r.Header.Set("Content-Type", "text/plain")
 	w := httptest.NewRecorder()
 
 	var buffer bytes.Buffer
@@ -27,7 +28,7 @@ func TestLoggerHandler(t *testing.T) {
 	}
 
 	line := strings.TrimSpace(buffer.String())
-	if line != `{"Method":"POST","URI":"/path?query","Headers":{},"Body":"OK"}` {
+	if line != `{"Method":"POST","URI":"/path?query","Headers":{"Content-Type":"text/plain"},"Body":"OK"}` {
 		t.Fatalf("unexpected log: `%s`", line)
 	}
 }
