@@ -24,11 +24,11 @@ func jsonRpcCall(t *testing.T, handler http.Handler, request, expectedResponse s
 
 	res := w.Result()
 	if res.StatusCode != 200 {
-		t.Fatalf("unexpected status: %d", res.StatusCode)
+		t.Errorf("unexpected status: %d", res.StatusCode)
 	}
 	contentType := res.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		t.Fatalf("unexpected Content-Type value: %s", contentType)
+		t.Errorf("unexpected Content-Type value: %s", contentType)
 	}
 
 	actualResponse, _ := ioutil.ReadAll(res.Body)
@@ -36,14 +36,14 @@ func jsonRpcCall(t *testing.T, handler http.Handler, request, expectedResponse s
 
 	var actualResponseObject interface{}
 	if err := json.Unmarshal(actualResponse, &actualResponseObject); err != nil {
-		t.Fatalf("actual response body is invalid json: %s", actualResponse)
+		t.Fatalf("actual response body is invalid json: %s\n%v", actualResponse, err)
 	}
 	var expectedResponseObject interface{}
 	if err := json.Unmarshal([]byte(expectedResponse), &expectedResponseObject); err != nil {
-		t.Fatalf("expected response body is invalid json: %s", expectedResponse)
+		t.Fatalf("expected response body is invalid json: %s\n%v", expectedResponse, err)
 	}
 	if !reflect.DeepEqual(actualResponseObject, expectedResponseObject) {
-		t.Fatalf("unexpected response: %s", actualResponse)
+		t.Errorf("unexpected response: %s", actualResponse)
 	}
 }
 
@@ -85,22 +85,22 @@ func TestE2E(t *testing.T) {
 
 		res := w.Result()
 		if res.StatusCode != 200 {
-			t.Fatalf("unexpected status: %d", res.StatusCode)
+			t.Errorf("unexpected status: %d", res.StatusCode)
 		}
 		contentType := res.Header.Get("Content-Type")
 		if contentType != "text/plain" {
-			t.Fatalf("unexpected Content-Type value: %s", contentType)
+			t.Errorf("unexpected Content-Type value: %s", contentType)
 		}
 		extraHeader := res.Header.Get("Extra-Header")
 		if extraHeader != "value" {
-			t.Fatalf("unexpected Extra-Header value: %s", extraHeader)
+			t.Errorf("unexpected Extra-Header value: %s", extraHeader)
 		}
 
 		resBody, _ := ioutil.ReadAll(res.Body)
 		res.Body.Close()
 
 		if string(resBody) != "OK" {
-			t.Fatalf("unexpected body: %s", resBody)
+			t.Errorf("unexpected body: %s", resBody)
 		}
 	}
 
