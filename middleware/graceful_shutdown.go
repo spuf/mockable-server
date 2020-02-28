@@ -3,43 +3,51 @@ package middleware
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
+	"net"
 	"net/http"
-	"os"
 	"time"
 )
 
-func ListenAndServeWithGracefulShutdown(ctx context.Context, server *http.Server) {
+func ListenAndServeWithGracefulShutdown(ctx context.Context, server *http.Server, onListen func(net.Addr)) error {
+	if server.Addr == "" {
+		server.Addr = ":0"
+	}
 	if server.IdleTimeout == 0 {
 		server.IdleTimeout = time.Minute
 	}
-	if server.ErrorLog == nil {
-		server.ErrorLog = log.New(os.Stdout, "server", log.LstdFlags)
+
+	ln, err := net.Listen("tcp", server.Addr)
+	if err != nil {
+		return err
+	}
+	if onListen != nil {
+		onListen(ln.Addr())
 	}
 
 	c := make(chan error, 1)
 	go func() {
-		server.ErrorLog.Println("Starting server to listen on", server.Addr)
-		c <- server.ListenAndServe()
+		c <- server.Serve(ln)
 	}()
 
 	select {
 	case <-ctx.Done():
-		server.ErrorLog.Println("Shutting down server")
-
 		ctxWithTimeout, cancel := context.WithTimeout(ctx, server.IdleTimeout)
 		defer cancel()
 
 		if err := server.Shutdown(ctxWithTimeout); err != nil {
-			server.ErrorLog.Fatalln("Could not gracefully shutdown server:", err)
+			return fmt.Errorf("could not gracefully shutdown server: %w", err)
 		}
 
 		if err := <-c; err != nil && !errors.Is(err, http.ErrServerClosed) {
-			server.ErrorLog.Fatalln("Server failed to serve:", err)
+			return fmt.Errorf("server failed to serve: %w", err)
 		}
+
 	case err := <-c:
 		if err != nil {
-			server.ErrorLog.Fatalln("Server failed to listen:", err)
+			return fmt.Errorf("server failed to listen: %w", err)
 		}
 	}
+
+	return nil
 }

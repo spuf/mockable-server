@@ -1,32 +1,41 @@
 package middleware
 
 import (
-	"bytes"
 	"context"
-	"log"
+	"net"
 	"net/http"
-	"strings"
+	"sync"
 	"testing"
 )
 
 func TestListenAndServeWithGracefulShutdown(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
 
-	var buffer bytes.Buffer
-	srv := &http.Server{
-		ErrorLog: log.New(&buffer, "", 0),
+	srv := &http.Server{Addr: "127.0.0.1:0"}
+
+	isShutdown := false
+	var err error
+	wg := new(sync.WaitGroup)
+
+	wg.Add(1)
+	srv.RegisterOnShutdown(func() {
+		defer wg.Done()
+		isShutdown = true
+	})
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err = ListenAndServeWithGracefulShutdown(ctx, srv, func(_ net.Addr) {
+			defer cancel()
+		})
+	}()
+
+	wg.Wait()
+	if err != nil {
+		t.Errorf("ListenAndServeWithGracefulShutdown: %v", err)
 	}
-
-	ListenAndServeWithGracefulShutdown(ctx, srv)
-
-	assertLogsContains := func(t *testing.T, logs, substr string) {
-		t.Helper()
-		if !strings.Contains(logs, substr) {
-			t.Errorf("Log does not contain:\n got: %#v\nwant substring: %#v", logs, substr)
-		}
+	if !isShutdown {
+		t.Errorf("Server was shutted down")
 	}
-
-	assertLogsContains(t, buffer.String(), "Starting server to listen on")
-	assertLogsContains(t, buffer.String(), "Shutting down server")
 }
