@@ -23,12 +23,12 @@ func TestLoggerHandler(t *testing.T) {
 	handler.ServeHTTP(w, r)
 
 	got := w.Result()
-	if got == nil {
-		t.Fatalf("unexpected Result")
+	if got.StatusCode != 200 {
+		t.Errorf("unexpected status code: %v", got.StatusCode)
 	}
 
 	line := strings.TrimSpace(buffer.String())
 	if line != `{"Method":"POST","URI":"/path?query","Headers":{"Content-Type":"text/plain"},"Body":"OK"}` {
-		t.Errorf("unexpected log: `%s`", line)
+		t.Errorf("unexpected log: %v", line)
 	}
 }

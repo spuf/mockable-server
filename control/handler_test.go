@@ -21,11 +21,10 @@ func TestHandlerJsonRpc1Url(t *testing.T) {
 
 	got := w.Result()
 	if got.StatusCode != 404 {
-		t.Errorf("unexpected status: %d", got.StatusCode)
+		t.Errorf("unexpected status: %v", got.StatusCode)
 	}
 
 	gotBody, _ := ioutil.ReadAll(got.Body)
-	_ = got.Body.Close()
 	if string(gotBody) != "Not Found\n" {
 		t.Errorf("unexpected body: %s", gotBody)
 	}
@@ -41,17 +40,16 @@ func TestHandlerJsonRpc1Method(t *testing.T) {
 
 	got := w.Result()
 	if got.StatusCode != 405 {
-		t.Errorf("unexpected status: %d", got.StatusCode)
+		t.Errorf("unexpected status: %v", got.StatusCode)
 	}
 	allow := got.Header.Get("Allow")
 	if allow != "POST" {
-		t.Errorf("unexpected Allow value: %s", allow)
+		t.Errorf("unexpected Allow value: %v", allow)
 	}
 
 	gotBody, _ := ioutil.ReadAll(got.Body)
-	_ = got.Body.Close()
 	if string(gotBody) != "Method Not Allowed\n" {
-		t.Errorf("unexpected body: %s", gotBody)
+		t.Errorf("unexpected body: %v", gotBody)
 	}
 }
 
@@ -209,25 +207,24 @@ func TestHandlerResponses(t *testing.T) {
 
 			got := w.Result()
 			if got.StatusCode != 200 {
-				t.Errorf("unexpected response status code: %d", got.StatusCode)
+				t.Errorf("unexpected response status code: %v", got.StatusCode)
 			}
 			contentType := got.Header.Get("Content-Type")
 			if contentType != "application/json" {
-				t.Errorf("unexpected response Content-Type value: %s", contentType)
+				t.Errorf("unexpected response Content-Type value: %v", contentType)
 			}
 
 			gotBody, err := ioutil.ReadAll(got.Body)
-			_ = got.Body.Close()
 			if err != nil {
 				t.Fatalf("ReadAll: %v", err)
 			}
 
 			var gotBodyObject, wandBodyObject interface{}
 			if err := json.Unmarshal(gotBody, &gotBodyObject); err != nil {
-				t.Fatalf("response body is invalid json: %s\n%v", gotBody, err)
+				t.Fatalf("response body is invalid json: %v\n%v", gotBody, err)
 			}
 			if err := json.Unmarshal([]byte(tt.wantBody), &wandBodyObject); err != nil {
-				t.Fatalf("test body is invalid json: %s\n%v", tt.wantBody, err)
+				t.Fatalf("test body is invalid json: %v\n%v", tt.wantBody, err)
 			}
 
 			if !reflect.DeepEqual(gotBodyObject, wandBodyObject) {
@@ -390,25 +387,24 @@ func TestHandlerRequests(t *testing.T) {
 
 			got := w.Result()
 			if got.StatusCode != 200 {
-				t.Errorf("unexpected response status code: %d", got.StatusCode)
+				t.Errorf("unexpected response status code: %v", got.StatusCode)
 			}
 			contentType := got.Header.Get("Content-Type")
 			if contentType != "application/json" {
-				t.Errorf("unexpected response Content-Type value: %s", contentType)
+				t.Errorf("unexpected response Content-Type value: %v", contentType)
 			}
 
 			gotBody, err := ioutil.ReadAll(got.Body)
-			_ = got.Body.Close()
 			if err != nil {
 				t.Fatalf("ReadAll: %v", err)
 			}
 
 			var gotBodyObject, wandBodyObject interface{}
 			if err := json.Unmarshal(gotBody, &gotBodyObject); err != nil {
-				t.Fatalf("response body is invalid json: %s\n%v", gotBody, err)
+				t.Fatalf("response body is invalid json: %v\n%v", gotBody, err)
 			}
 			if err := json.Unmarshal([]byte(tt.wantBody), &wandBodyObject); err != nil {
-				t.Fatalf("test body is invalid json: %s\n%v", tt.wantBody, err)
+				t.Fatalf("test body is invalid json: %v\n%v", tt.wantBody, err)
 			}
 
 			if !reflect.DeepEqual(gotBodyObject, wandBodyObject) {

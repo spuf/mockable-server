@@ -24,7 +24,7 @@ func jsonRpcCall(t *testing.T, handler http.Handler, request, expectedResponse s
 
 	res := w.Result()
 	if res.StatusCode != 200 {
-		t.Errorf("unexpected status: %d", res.StatusCode)
+		t.Errorf("unexpected status: %v", res.StatusCode)
 	}
 	contentType := res.Header.Get("Content-Type")
 	if contentType != "application/json" {
@@ -32,18 +32,17 @@ func jsonRpcCall(t *testing.T, handler http.Handler, request, expectedResponse s
 	}
 
 	actualResponse, _ := ioutil.ReadAll(res.Body)
-	_ = res.Body.Close()
 
 	var actualResponseObject interface{}
 	if err := json.Unmarshal(actualResponse, &actualResponseObject); err != nil {
-		t.Fatalf("actual response body is invalid json: %s\n%v", actualResponse, err)
+		t.Fatalf("actual response body is invalid json: %v\n%v", actualResponse, err)
 	}
 	var expectedResponseObject interface{}
 	if err := json.Unmarshal([]byte(expectedResponse), &expectedResponseObject); err != nil {
-		t.Fatalf("expected response body is invalid json: %s\n%v", expectedResponse, err)
+		t.Fatalf("expected response body is invalid json: %v\n%v", expectedResponse, err)
 	}
 	if !reflect.DeepEqual(actualResponseObject, expectedResponseObject) {
-		t.Errorf("unexpected response: %s", actualResponse)
+		t.Errorf("unexpected response: %v", actualResponse)
 	}
 }
 
@@ -85,22 +84,21 @@ func TestE2E(t *testing.T) {
 
 		res := w.Result()
 		if res.StatusCode != 200 {
-			t.Errorf("unexpected status: %d", res.StatusCode)
+			t.Errorf("unexpected status: %v", res.StatusCode)
 		}
 		contentType := res.Header.Get("Content-Type")
 		if contentType != "text/plain" {
-			t.Errorf("unexpected Content-Type value: %s", contentType)
+			t.Errorf("unexpected Content-Type value: %v", contentType)
 		}
 		extraHeader := res.Header.Get("Extra-Header")
 		if extraHeader != "value" {
-			t.Errorf("unexpected Extra-Header value: %s", extraHeader)
+			t.Errorf("unexpected Extra-Header value: %v", extraHeader)
 		}
 
 		resBody, _ := ioutil.ReadAll(res.Body)
-		res.Body.Close()
 
 		if string(resBody) != "OK" {
-			t.Errorf("unexpected body: %s", resBody)
+			t.Errorf("unexpected body: %v", resBody)
 		}
 	}
 
