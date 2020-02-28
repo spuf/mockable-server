@@ -147,6 +147,13 @@ func TestFunctional(t *testing.T) {
 
 	jsonRpcCall(t, controlHandler, `
 		{
+			"method": "Requests.Pop",
+			"params": []    
+		}      
+	`, `{"id":null,"result":null,"error":null}`)
+
+	jsonRpcCall(t, controlHandler, `
+		{
 			"method": "Responses.Clear",
 			"params": []    
 		}      
