@@ -34,7 +34,10 @@ func (m *loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		headers[name] = strings.Join(values, "; ")
 	}
 
-	body := m.drainBody(r)
+	body, err := m.drainBody(r)
+	if err != nil {
+		m.logger.Fatalln(err)
+	}
 
 	entry := logEntry{
 		Method:  r.Method,
@@ -51,15 +54,15 @@ func (m *loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	m.next.ServeHTTP(w, r)
 }
 
-func (m *loggerHandler) drainBody(r *http.Request) *bytes.Buffer {
+func (m *loggerHandler) drainBody(r *http.Request) (*bytes.Buffer, error) {
 	var body bytes.Buffer
 	if _, err := body.ReadFrom(r.Body); err != nil {
-		m.logger.Fatalln(err)
+		return nil, err
 	}
 	if err := r.Body.Close(); err != nil {
-		m.logger.Fatalln(err)
+		return nil, err
 	}
 	r.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
 
-	return &body
+	return &body, nil
 }

@@ -14,19 +14,24 @@ func NewRequests(store storage.Store) *Requests {
 
 func (r *Requests) List(_ struct{}, reply *[]Request) error {
 	list := r.store.List()
-	res := make([]Request, len(list))
-	for i, msg := range list {
-		res[i] = RequestFromMessage(msg)
+	for _, msg := range list {
+		if request, err := requestFromMessage(msg); err != nil {
+			return err
+		} else {
+			*reply = append(*reply, *request)
+		}
 	}
 
-	*reply = res
 	return nil
 }
 
 func (r *Requests) Pop(_ struct{}, reply *interface{}) error {
 	if msg := r.store.PopFirst(); msg != nil {
-		res := RequestFromMessage(*msg)
-		*reply = res
+		if request, err := requestFromMessage(*msg); err != nil {
+			return err
+		} else {
+			*reply = *request
+		}
 	}
 
 	return nil
@@ -34,7 +39,7 @@ func (r *Requests) Pop(_ struct{}, reply *interface{}) error {
 
 func (r *Requests) Clear(_ struct{}, reply *bool) error {
 	r.store.Clear()
-
 	*reply = true
+
 	return nil
 }

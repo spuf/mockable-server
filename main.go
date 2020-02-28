@@ -48,7 +48,7 @@ func main() {
 	mockLogger := log.New(os.Stdout, "[mock]\t", 0)
 
 	queues := storage.NewQueues()
-	servers := []*http.Server{
+	servers := [...]*http.Server{
 		&http.Server{
 			Addr:     controlAddr,
 			Handler:  middleware.NewLoggerHandler(controlLogger, control.NewHandler(queues)),
