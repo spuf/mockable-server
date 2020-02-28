@@ -22,14 +22,17 @@ func (m *mock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 
-	m.queues.Requests.PushLast(storage.Message{
+	message := storage.Message{
 		Headers: r.Header,
 		Body:    body.String(),
 		Request: &storage.Request{
 			Method: r.Method,
 			Url:    r.URL.RequestURI(),
 		},
-	})
+	}
+	if err := m.queues.Requests.PushLast(message); err != nil {
+		log.Fatalln(err)
+	}
 
 	res := m.queues.Responses.PopFirst()
 	if res == nil {
