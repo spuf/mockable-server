@@ -2,6 +2,7 @@ package control
 
 import (
 	"fmt"
+
 	"github.com/spuf/mockable-server/storage"
 )
 

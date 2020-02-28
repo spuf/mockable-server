@@ -2,15 +2,16 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/spuf/mockable-server/control"
-	"github.com/spuf/mockable-server/mock"
-	"github.com/spuf/mockable-server/storage"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/spuf/mockable-server/control"
+	"github.com/spuf/mockable-server/mock"
+	"github.com/spuf/mockable-server/storage"
 )
 
 func jsonRpcCall(t *testing.T, handler http.Handler, request, expectedResponse string) {
