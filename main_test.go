@@ -26,10 +26,10 @@ func TestServersStart(t *testing.T) {
 		reader := bufio.NewReader(logsReader)
 		for {
 			line, err := reader.ReadString('\n')
+			if err == io.EOF {
+				break
+			}
 			if err != nil {
-				if err == io.EOF {
-					return
-				}
 				t.Errorf("reader.ReadString: %v", err)
 			}
 			t.Logf("# %v", line)
