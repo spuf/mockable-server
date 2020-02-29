@@ -15,11 +15,11 @@ func NewRequests(store storage.Store) *Requests {
 func (r *Requests) List(_ struct{}, reply *[]Request) error {
 	list := r.store.List()
 	for _, msg := range list {
-		if request, err := requestFromMessage(msg); err != nil {
+		request, err := requestFromMessage(msg)
+		if err != nil {
 			return err
-		} else {
-			*reply = append(*reply, *request)
 		}
+		*reply = append(*reply, *request)
 	}
 
 	return nil
@@ -27,11 +27,11 @@ func (r *Requests) List(_ struct{}, reply *[]Request) error {
 
 func (r *Requests) Pop(_ struct{}, reply *interface{}) error {
 	if msg := r.store.PopFirst(); msg != nil {
-		if request, err := requestFromMessage(*msg); err != nil {
+		request, err := requestFromMessage(*msg)
+		if err != nil {
 			return err
-		} else {
-			*reply = *request
 		}
+		*reply = *request
 	}
 
 	return nil
