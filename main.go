@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -24,14 +23,7 @@ var (
 	Version     string
 	mockAddr    string
 	controlAddr string
-	logOut      io.Writer
-	quitSignal  os.Signal
 )
-
-func init() {
-	logOut = os.Stdout
-	quitSignal = os.Interrupt
-}
 
 func main() {
 	flag.Usage = func() {
@@ -58,8 +50,8 @@ func main() {
 	if Version == "" {
 		logFlags = logFlags | log.Lshortfile
 	}
-	controlLogger := log.New(logOut, "[control] ", logFlags)
-	mockLogger := log.New(logOut, "[mock] ", logFlags)
+	controlLogger := log.New(os.Stdout, "[control] ", logFlags)
+	mockLogger := log.New(os.Stdout, "[mock] ", logFlags)
 
 	queues := storage.NewQueues()
 	servers := [...]*http.Server{
@@ -78,11 +70,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, quitSignal)
+	quitSignal := make(chan os.Signal, 1)
+	signal.Notify(quitSignal, os.Interrupt)
 	go func() {
 		defer cancel()
-		<-quit
+		<-quitSignal
 	}()
 
 	wg := new(sync.WaitGroup)
