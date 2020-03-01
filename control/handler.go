@@ -1,7 +1,6 @@
 package control
 
 import (
-	"log"
 	"net/http"
 	"net/rpc"
 
@@ -16,10 +15,10 @@ type control struct {
 func NewHandler(queues *storage.Queues) http.Handler {
 	rpcServer := rpc.NewServer()
 	if err := rpcServer.Register(NewResponses(queues.Responses)); err != nil {
-		log.Fatalln("RPC register Responses error:", err)
+		panic(err)
 	}
 	if err := rpcServer.Register(NewRequests(queues.Requests)); err != nil {
-		log.Fatalln("RPC register Requests error:", err)
+		panic(err)
 	}
 
 	return &control{
