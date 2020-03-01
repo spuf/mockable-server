@@ -1,12 +1,16 @@
-FROM golang:1.14-alpine3.11 AS builder
+ARG go_version=1.14
+ARG alpine_version=3.11
 
-RUN apk add --no-cache curl git build-base
+###
+FROM golang:${go_version}-alpine${alpine_version} AS builder
 
-ARG golangci_version=1.23.6
-RUN curl -sfL 'https://install.goreleaser.com/github.com/golangci/golangci-lint.sh' | \
-        sh -s -- -b "$(go env GOPATH)/bin" "v${golangci_version}"
+# golangci deps
+RUN apk add --no-cache git build-base
 
-WORKDIR /app
+ARG golangci_version=1.23.7
+RUN wget -O- -nv 'https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh' | sh -s "v${golangci_version}"
+
+WORKDIR /go/src/mockable-server
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -20,14 +24,12 @@ RUN go test -cover ./...
 
 # build
 ARG version=""
-RUN go build \
-    -ldflags="-X main.Version=${version}" \
-    -o /go/bin/app
+RUN go build -ldflags="-X main.Version=${version}" -o /go/bin/mockable-server
 
 ###
-FROM alpine:3.11
+FROM alpine:${alpine_version}
 
-COPY --from=builder /go/bin/app /mockable-server
+COPY --from=builder /go/bin/mockable-server /mockable-server
 
 STOPSIGNAL SIGINT
 USER nobody:nogroup
