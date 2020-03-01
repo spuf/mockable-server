@@ -3,7 +3,6 @@ package mock
 import (
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/spuf/mockable-server/storage"
@@ -20,7 +19,7 @@ func NewHandler(queues *storage.Queues) http.Handler {
 func (m *mock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var body bytes.Buffer
 	if _, err := body.ReadFrom(r.Body); err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
 	message := storage.Message{
@@ -32,7 +31,7 @@ func (m *mock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	if err := m.queues.Requests.PushLast(message); err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
 	res := m.queues.Responses.PopFirst()
@@ -50,6 +49,6 @@ func (m *mock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(res.Response.Status)
 	if _, err := io.WriteString(w, res.Body); err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 }

@@ -38,7 +38,7 @@ func main() {
 		envName := strings.ReplaceAll(strings.ToUpper(f.Name), "-", "_")
 		if envVal, ok := os.LookupEnv(envName); ok {
 			if err := flag.Set(f.Name, envVal); err != nil {
-				log.Fatalln(err)
+				panic(err)
 			}
 		}
 
@@ -70,6 +70,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	hasError := make(chan bool)
 	quitSignal := make(chan os.Signal, 1)
 	signal.Notify(quitSignal, os.Interrupt)
 	go func() {
@@ -97,6 +98,7 @@ func main() {
 
 			if err := middleware.ListenAndServeWithGracefulShutdown(ctx, srv, onListen); err != nil {
 				defer cancel()
+				hasError <- true
 				if srv.ErrorLog != nil {
 					srv.ErrorLog.Println(err)
 				}
@@ -104,4 +106,10 @@ func main() {
 		}(srv)
 	}
 	wg.Wait()
+
+	select {
+	case <-hasError:
+		os.Exit(1)
+	default:
+	}
 }

@@ -11,7 +11,7 @@ import (
 
 func ListenAndServeWithGracefulShutdown(ctx context.Context, server *http.Server, onListen func(net.Addr)) error {
 	if server.Addr == "" {
-		server.Addr = ":0"
+		return fmt.Errorf("server addr must be defined")
 	}
 	if server.IdleTimeout == 0 {
 		server.IdleTimeout = time.Minute
