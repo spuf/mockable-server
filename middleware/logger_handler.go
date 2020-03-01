@@ -36,7 +36,7 @@ func (m *loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	body, err := m.drainBody(r)
 	if err != nil {
-		m.logger.Fatalln(err)
+		panic(err)
 	}
 
 	entry := logEntry{
@@ -47,7 +47,7 @@ func (m *loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	line, err := json.Marshal(entry)
 	if err != nil {
-		m.logger.Fatalln(err)
+		panic(err)
 	}
 	m.logger.Println(string(line))
 
