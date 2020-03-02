@@ -41,7 +41,9 @@ services:
 
 ## Control API
 
-Uses JSON-API 1.0 at `:8020/rpc/1`
+Has health check endpoint `:8020/healthz`.
+
+Uses JSON-API 1.0 at `:8020/rpc/1`.
 
 ### Requests queue
 
