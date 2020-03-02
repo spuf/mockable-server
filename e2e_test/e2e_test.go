@@ -36,7 +36,6 @@ func TestHealthz(t *testing.T) {
 		case <-ctx.Done():
 			t.Fatalf("control not ready: %v", ctx.Err())
 		default:
-			t.Log(controlHealthz.String())
 			res, err := http.Get(controlHealthz.String())
 			if err != nil {
 				t.Logf("control /healthz error: %v", err)
