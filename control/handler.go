@@ -1,6 +1,7 @@
 package control
 
 import (
+	"fmt"
 	"net/http"
 	"net/rpc"
 
@@ -28,6 +29,14 @@ func NewHandler(queues *storage.Queues) http.Handler {
 }
 
 func (c *control) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet && r.URL.Path == "/healthz" {
+		w.Header().Set("Content-Type", "text/plain")
+		status := http.StatusOK
+		w.WriteHeader(status)
+		fmt.Fprintln(w, http.StatusText(status))
+		return
+	}
+
 	if r.URL.Path != "/rpc/1" {
 		status := http.StatusNotFound
 		http.Error(w, http.StatusText(status), status)
