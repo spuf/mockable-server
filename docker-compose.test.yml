@@ -1,0 +1,15 @@
+version: "3.7"
+services:
+  mockable-server:
+    build:
+      context: .
+
+  sut:
+    build:
+      context: .
+      target: e2e_test
+    environment:
+      TEST_MOCK_SERVER_BASE: http://mockable-server:8010
+      TEST_MOCK_SERVER_CONTROL_BASE: http://mockable-server:8020
+    depends_on:
+      - mockable-server

@@ -27,6 +27,10 @@ ARG version=""
 RUN go build -ldflags="-X main.Version=${version}" -o /go/bin/mockable-server
 
 ###
+FROM builder as e2e_test
+CMD go test -v --tags e2e_test ./e2e_test
+
+###
 FROM alpine:${alpine_version}
 
 COPY --from=builder /go/bin/mockable-server /mockable-server
