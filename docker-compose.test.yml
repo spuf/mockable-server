@@ -8,7 +8,7 @@ services:
   sut:
     build:
       context: .
-      target: e2e_test
+      target: test
     environment:
       TEST_MOCK_SERVER_BASE: http://mockable-server:8010
       TEST_MOCK_SERVER_CONTROL_BASE: http://mockable-server:8020
