@@ -2,7 +2,7 @@ ARG go_version=1.14
 ARG alpine_version=3.11
 
 ###
-FROM golang:${go_version}-alpine${alpine_version} AS builder
+FROM golang:${go_version}-alpine${alpine_version} AS base
 
 # golangci deps
 RUN apk add --no-cache git build-base
@@ -18,22 +18,24 @@ RUN go mod verify
 
 COPY . ./
 
-# test
+###
+FROM base as test
+
 RUN golangci-lint run ./...
 RUN go test -cover ./...
 
-# build
+CMD go test --tags e2e_test ./e2e_test
+
+###
+FROM base as build
+
 ARG version=""
 RUN go build -ldflags="-X main.Version=${version}" -o /go/bin/mockable-server
 
 ###
-FROM builder as e2e_test
-CMD go test -v --tags e2e_test ./e2e_test
-
-###
 FROM alpine:${alpine_version}
 
-COPY --from=builder /go/bin/mockable-server /mockable-server
+COPY --from=build /go/bin/mockable-server /mockable-server
 
 STOPSIGNAL SIGINT
 USER nobody:nogroup
