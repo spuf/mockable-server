@@ -22,7 +22,7 @@ func ListenAndServeWithGracefulShutdown(ctx context.Context, server *http.Server
 		return err
 	}
 	if onListen != nil {
-		onListen(ln.Addr())
+		go onListen(ln.Addr())
 	}
 
 	c := make(chan error, 1)

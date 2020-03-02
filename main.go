@@ -70,7 +70,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	hasError := make(chan bool)
+	serverErrors := make(chan error, len(servers))
 	quitSignal := make(chan os.Signal, 1)
 	signal.Notify(quitSignal, os.Interrupt)
 	go func() {
@@ -86,21 +86,21 @@ func main() {
 
 			srv.RegisterOnShutdown(func() {
 				if srv.ErrorLog != nil {
-					srv.ErrorLog.Println("Shutting down server")
+					srv.ErrorLog.Printf("Shutting down server")
 				}
 			})
 
 			onListen := func(addr net.Addr) {
 				if srv.ErrorLog != nil {
-					srv.ErrorLog.Println("Server is listening on", addr.String())
+					srv.ErrorLog.Printf("Server is listening on %s", addr.String())
 				}
 			}
 
 			if err := middleware.ListenAndServeWithGracefulShutdown(ctx, srv, onListen); err != nil {
 				defer cancel()
-				hasError <- true
+				serverErrors <- err
 				if srv.ErrorLog != nil {
-					srv.ErrorLog.Println(err)
+					srv.ErrorLog.Printf("failed: %v", err)
 				}
 			}
 		}(srv)
@@ -108,8 +108,10 @@ func main() {
 	wg.Wait()
 
 	select {
-	case <-hasError:
+	case err := <-serverErrors:
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	default:
+		close(serverErrors)
 	}
 }
