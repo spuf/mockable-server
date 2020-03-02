@@ -10,7 +10,7 @@ services:
       context: .
       target: test
     environment:
-      TEST_MOCK_SERVER_BASE: http://mockable-server:8010
-      TEST_MOCK_SERVER_CONTROL_BASE: http://mockable-server:8020
+      TEST_MOCKABLE_SERVER_BASE: http://mockable-server:8010
+      TEST_MOCKABLE_SERVER_CONTROL_BASE: http://mockable-server:8020
     depends_on:
       - mockable-server
