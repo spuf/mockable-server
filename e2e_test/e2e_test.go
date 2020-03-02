@@ -67,9 +67,9 @@ func TestE2E(t *testing.T) {
 		return u
 	}
 
-	mockBase := getUrlEnv("TEST_MOCK_SERVER_BASE").String()
+	mockBase := getUrlEnv("TEST_MOCKABLE_SERVER_BASE").String()
 
-	controlBase := getUrlEnv("TEST_MOCK_SERVER_CONTROL_BASE")
+	controlBase := getUrlEnv("TEST_MOCKABLE_SERVER_CONTROL_BASE")
 	controlBase.Path = "/healthz"
 	controlHealthz := controlBase.String()
 	controlBase.Path = "/rpc/1"

@@ -24,19 +24,16 @@ Usage of mockable-server:
 docker-compose.yml:
 ```yaml
 services:
-    mockable-server:
-        image: spuf/mockable-server:latest
-        environment:
-            MOCK_ADDR: :8010 
-            CONTROL_ADDR: :8020   
+  mockable-server:
+    image: spuf/mockable-server:latest
 
-    your-service:
-        environment:
-            TEST_MOCK_SERVER_HOST: mockable-server
-            TEST_MOCK_SERVER_PORT: 8010
-            TEST_MOCK_SERVER_CONTROL_PORT: 8020
-        depends_on:
-            - mockable-server
+  your-service:
+    build: .
+    environment:
+      TEST_MOCKABLE_SERVER_BASE: http://mockable-server:8010
+      TEST_MOCKABLE_SERVER_CONTROL_BASE: http://mockable-server:8020
+    depends_on:
+      - mockable-server
 ```
 
 ## Control API
