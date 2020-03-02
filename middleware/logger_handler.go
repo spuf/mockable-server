@@ -49,7 +49,7 @@ func (m *loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	m.logger.Println(string(line))
+	m.logger.Printf("%s", string(line))
 
 	m.next.ServeHTTP(w, r)
 }

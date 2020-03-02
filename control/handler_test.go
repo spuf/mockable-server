@@ -25,7 +25,7 @@ func TestHandlerHealthz(t *testing.T) {
 	}
 
 	gotBody, _ := ioutil.ReadAll(got.Body)
-	if string(gotBody) != "OK\n" {
+	if string(gotBody) != "OK" {
 		t.Errorf("unexpected body: %s", gotBody)
 	}
 }

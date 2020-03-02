@@ -33,7 +33,7 @@ func (c *control) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
 		status := http.StatusOK
 		w.WriteHeader(status)
-		fmt.Fprintln(w, http.StatusText(status))
+		fmt.Fprintf(w, "%s", http.StatusText(status))
 		return
 	}
 
