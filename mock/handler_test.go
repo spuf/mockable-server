@@ -12,7 +12,7 @@ import (
 )
 
 func TestHandlerNoResponse(t *testing.T) {
-	r := httptest.NewRequest(http.MethodPost, "/base/../path?query", strings.NewReader("Hello"))
+	r := httptest.NewRequest(http.MethodGet, "/base/../path?query", nil)
 	r.Header.Set("Content-Type", "text/plain")
 	w := httptest.NewRecorder()
 
@@ -34,9 +34,9 @@ func TestHandlerNoResponse(t *testing.T) {
 		Headers: http.Header{
 			"Content-Type": {"text/plain"},
 		},
-		Body: "Hello",
+		Body: "",
 		Request: &storage.Request{
-			Method: "POST",
+			Method: "GET",
 			Url:    "/base/../path?query",
 		},
 	}
