@@ -12,7 +12,7 @@ import (
 )
 
 func TestHandlerNoResponse(t *testing.T) {
-	r := httptest.NewRequest(http.MethodPost, "/path?query", strings.NewReader("OK"))
+	r := httptest.NewRequest(http.MethodPost, "/base/../path?query", strings.NewReader("Hello"))
 	r.Header.Set("Content-Type", "text/plain")
 	w := httptest.NewRecorder()
 
@@ -34,10 +34,10 @@ func TestHandlerNoResponse(t *testing.T) {
 		Headers: http.Header{
 			"Content-Type": {"text/plain"},
 		},
-		Body: "OK",
+		Body: "Hello",
 		Request: &storage.Request{
 			Method: "POST",
-			Url:    "/path?query",
+			Url:    "/base/../path?query",
 		},
 	}
 
@@ -47,7 +47,7 @@ func TestHandlerNoResponse(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	r := httptest.NewRequest(http.MethodPost, "/path?query", strings.NewReader("OK"))
+	r := httptest.NewRequest(http.MethodPost, "/base/../path?query", strings.NewReader("Hello"))
 	r.Header.Set("Content-Type", "text/plain")
 	w := httptest.NewRecorder()
 
@@ -58,7 +58,7 @@ func TestHandler(t *testing.T) {
 		},
 		Body:     "Answer",
 		Request:  nil,
-		Response: &storage.Response{Status: 200},
+		Response: &storage.Response{Status: 201},
 	}
 	if err := queues.Responses.PushLast(res); err != nil {
 		t.Fatalf("PushLast: %v", err)
@@ -68,7 +68,7 @@ func TestHandler(t *testing.T) {
 	handler.ServeHTTP(w, r)
 
 	got := w.Result()
-	if got.StatusCode != 200 {
+	if got.StatusCode != 201 {
 		t.Errorf("unexpected status code: %v", got.StatusCode)
 	}
 	gotContentType := got.Header.Get("Content-Type")
@@ -85,10 +85,10 @@ func TestHandler(t *testing.T) {
 		Headers: http.Header{
 			"Content-Type": {"text/plain"},
 		},
-		Body: "OK",
+		Body: "Hello",
 		Request: &storage.Request{
 			Method: "POST",
-			Url:    "/path?query",
+			Url:    "/base/../path?query",
 		},
 	}
 
