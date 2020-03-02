@@ -154,6 +154,19 @@ func TestHandlerResponses(t *testing.T) {
 				],
 				"error": null
 			}`,
+			wantQueuesResponses: []storage.Message{
+				{
+					Headers: http.Header{
+						"Content-Type": {"text/plain"},
+						"Extra-Header": {"value"},
+					},
+					Body:     "OK",
+					Response: &storage.Response{Status: 200},
+				},
+				{
+					Response: &storage.Response{},
+				},
+			},
 		},
 
 		{
@@ -231,11 +244,9 @@ func TestHandlerResponses(t *testing.T) {
 				t.Errorf("response body mismatch:\n got: %#v\nwant: %#v", gotBodyObject, wandBodyObject)
 			}
 
-			if tt.wantQueuesResponses != nil {
-				list := queues.Responses.List()
-				if !reflect.DeepEqual(list, tt.wantQueuesResponses) {
-					t.Errorf("queues.Responses mismatch:\n got: %#v\nwant: %#v", list, tt.wantQueuesResponses)
-				}
+			list := queues.Responses.List()
+			if !reflect.DeepEqual(list, tt.wantQueuesResponses) {
+				t.Errorf("queues.Responses mismatch:\n got: %#v\nwant: %#v", list, tt.wantQueuesResponses)
 			}
 		})
 	}
@@ -349,6 +360,36 @@ func TestHandlerRequests(t *testing.T) {
 				],
 				"error": null
 			}`,
+			wantQueuesRequests: []storage.Message{
+				{
+					Headers: http.Header{
+						"Content-Type": {"text/plain"},
+						"Extra-Header": {"value"},
+					},
+					Body: "OK",
+					Request: &storage.Request{
+						Method: "GET",
+						Url:    "/path?query",
+					},
+				},
+				{
+					Request: &storage.Request{},
+				},
+			},
+		},
+
+		{
+			name: "Requests.Clear empty",
+			body: `{
+				"method": "Requests.Clear",
+				"params": []
+			}`,
+			wantBody: `{
+				"id": null,
+				"result": true,
+				"error": null
+			}`,
+			wantQueuesRequests: []storage.Message{},
 		},
 
 		{
@@ -367,6 +408,7 @@ func TestHandlerRequests(t *testing.T) {
 				"result": true,
 				"error": null
 			}`,
+			wantQueuesRequests: []storage.Message{},
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -411,11 +453,9 @@ func TestHandlerRequests(t *testing.T) {
 				t.Errorf("response body mismatch:\n got: %#v\nwant: %#v", gotBodyObject, wandBodyObject)
 			}
 
-			if tt.wantQueuesRequests != nil {
-				list := queues.Requests.List()
-				if !reflect.DeepEqual(list, tt.wantQueuesRequests) {
-					t.Errorf("queues.Requests mismatch:\n got: %#v\nwant: %#v", list, tt.wantQueuesRequests)
-				}
+			list := queues.Requests.List()
+			if !reflect.DeepEqual(list, tt.wantQueuesRequests) {
+				t.Errorf("queues.Requests mismatch:\n got: %#v\nwant: %#v", list, tt.wantQueuesRequests)
 			}
 		})
 	}
