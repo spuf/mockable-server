@@ -97,12 +97,12 @@ func TestHandlerResponses(t *testing.T) {
 			body: `{
 				"method": "Responses.Push",
 				"params": [{
-					"status": 200,
+					"status": 201,
 					"headers": {
 						"Content-Type": "text/plain",
 						"Extra-Header": "value"
 					},
-					"body": "OK"
+					"body": "Hello"
 				}]
 			}`,
 			wantBody: `{
@@ -116,8 +116,8 @@ func TestHandlerResponses(t *testing.T) {
 						"Content-Type": {"text/plain"},
 						"Extra-Header": {"value"},
 					},
-					Body:     "OK",
-					Response: &storage.Response{Status: 200},
+					Body:     "Hello",
+					Response: &storage.Response{Status: 201},
 				},
 			},
 		},
@@ -144,8 +144,8 @@ func TestHandlerResponses(t *testing.T) {
 						"Content-Type": {"text/plain"},
 						"Extra-Header": {"value"},
 					},
-					Body:     "OK",
-					Response: &storage.Response{Status: 200},
+					Body:     "Hello",
+					Response: &storage.Response{Status: 201},
 				},
 				{
 					Response: &storage.Response{},
@@ -159,9 +159,9 @@ func TestHandlerResponses(t *testing.T) {
 				"id": null,
 				"result": [
 					{
-						"status": 200,
+						"status": 201,
 						"headers": {"Content-Type": "text/plain","Extra-Header": "value"},
-						"body": "OK"
+						"body": "Hello"
 					},
 					{
 						"status": 0,
@@ -177,8 +177,8 @@ func TestHandlerResponses(t *testing.T) {
 						"Content-Type": {"text/plain"},
 						"Extra-Header": {"value"},
 					},
-					Body:     "OK",
-					Response: &storage.Response{Status: 200},
+					Body:     "Hello",
+					Response: &storage.Response{Status: 201},
 				},
 				{
 					Response: &storage.Response{},
@@ -299,10 +299,10 @@ func TestHandlerRequests(t *testing.T) {
 						"Content-Type": {"text/plain"},
 						"Extra-Header": {"value"},
 					},
-					Body: "OK",
+					Body: "Hello",
 					Request: &storage.Request{
 						Method: "GET",
-						Url:    "/path?query",
+						Url:    "/base/../path?query",
 					},
 				},
 			},
@@ -314,9 +314,9 @@ func TestHandlerRequests(t *testing.T) {
 				"id": null,
 				"result": {
 					"method": "GET",
-					"url": "/path?query",
+					"url": "/base/../path?query",
 					"headers": {"Content-Type": "text/plain","Extra-Header": "value"},
-					"body": "OK"
+					"body": "Hello"
 				},
 				"error": null
 			}`,
@@ -345,10 +345,10 @@ func TestHandlerRequests(t *testing.T) {
 						"Content-Type": {"text/plain"},
 						"Extra-Header": {"value"},
 					},
-					Body: "OK",
+					Body: "Hello",
 					Request: &storage.Request{
 						Method: "GET",
-						Url:    "/path?query",
+						Url:    "/base/../path?query",
 					},
 				},
 				{
@@ -364,9 +364,9 @@ func TestHandlerRequests(t *testing.T) {
 				"result": [ 
 					{
 						"method": "GET",
-						"url": "/path?query",
+						"url": "/base/../path?query",
 						"headers": {"Content-Type": "text/plain","Extra-Header": "value"},
-						"body": "OK"
+						"body": "Hello"
 					},
 					{
 						"method": "",
@@ -383,10 +383,10 @@ func TestHandlerRequests(t *testing.T) {
 						"Content-Type": {"text/plain"},
 						"Extra-Header": {"value"},
 					},
-					Body: "OK",
+					Body: "Hello",
 					Request: &storage.Request{
 						Method: "GET",
-						Url:    "/path?query",
+						Url:    "/base/../path?query",
 					},
 				},
 				{
