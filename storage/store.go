@@ -71,7 +71,7 @@ func (s *store) List() []Message {
 }
 
 func (s *store) Clear() {
-	s.items = []*Message{}
+	s.items = nil
 }
 
 func NewStore(validator func(Message) error) Store {
