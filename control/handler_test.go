@@ -12,8 +12,26 @@ import (
 	"github.com/spuf/mockable-server/storage"
 )
 
-func TestHandlerJsonRpc1Url(t *testing.T) {
-	r := httptest.NewRequest(http.MethodGet, "/", strings.NewReader(""))
+func TestHandlerHealthz(t *testing.T) {
+	r := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	w := httptest.NewRecorder()
+
+	handler := NewHandler(storage.NewQueues())
+	handler.ServeHTTP(w, r)
+
+	got := w.Result()
+	if got.StatusCode != 200 {
+		t.Errorf("unexpected status: %v", got.StatusCode)
+	}
+
+	gotBody, _ := ioutil.ReadAll(got.Body)
+	if string(gotBody) != "OK\n" {
+		t.Errorf("unexpected body: %s", gotBody)
+	}
+}
+
+func TestHandlerJsonRpc1Path(t *testing.T) {
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
 	handler := NewHandler(storage.NewQueues())
@@ -28,11 +46,10 @@ func TestHandlerJsonRpc1Url(t *testing.T) {
 	if string(gotBody) != "Not Found\n" {
 		t.Errorf("unexpected body: %s", gotBody)
 	}
-
 }
 
 func TestHandlerJsonRpc1Method(t *testing.T) {
-	r := httptest.NewRequest(http.MethodGet, "/rpc/1", strings.NewReader(""))
+	r := httptest.NewRequest(http.MethodGet, "/rpc/1", nil)
 	w := httptest.NewRecorder()
 
 	handler := NewHandler(storage.NewQueues())
