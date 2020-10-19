@@ -56,13 +56,17 @@ func main() {
 	queues := storage.NewQueues()
 	servers := [...]*http.Server{
 		&http.Server{
-			Addr:     controlAddr,
-			Handler:  middleware.NewLoggerHandler(controlLogger, control.NewHandler(queues)),
+			Addr: controlAddr,
+			Handler: middleware.NewServerHandler(fmt.Sprintf("%s %s (control)", Application, Version),
+				middleware.NewLoggerHandler(controlLogger,
+					control.NewHandler(queues))),
 			ErrorLog: controlLogger,
 		},
 		&http.Server{
-			Addr:     mockAddr,
-			Handler:  middleware.NewLoggerHandler(mockLogger, mock.NewHandler(queues)),
+			Addr: mockAddr,
+			Handler: middleware.NewServerHandler(fmt.Sprintf("%s %s", Application, Version),
+				middleware.NewLoggerHandler(mockLogger,
+					mock.NewHandler(queues))),
 			ErrorLog: mockLogger,
 		},
 	}
