@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/spuf/mockable-server/storage"
 )
@@ -48,6 +49,7 @@ func (m *mock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(res.Response.Status)
+	time.Sleep(res.Delay)
 	if _, err := io.WriteString(w, res.Body); err != nil {
 		panic(err)
 	}
