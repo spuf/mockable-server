@@ -159,11 +159,13 @@ func TestHandlerResponses(t *testing.T) {
 				"id": null,
 				"result": [
 					{
+						"delay": 0,
 						"status": 201,
 						"headers": {"Content-Type": "text/plain","Extra-Header": "value"},
 						"body": "Hello"
 					},
 					{
+						"delay": 0,
 						"status": 0,
 						"headers": {},
 						"body": ""

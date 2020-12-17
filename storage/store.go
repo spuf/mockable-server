@@ -2,6 +2,7 @@ package storage
 
 import (
 	"net/http"
+	"time"
 )
 
 type Request struct {
@@ -12,6 +13,8 @@ type Response struct {
 	Status int
 }
 type Message struct {
+	Delay time.Duration
+
 	Headers http.Header
 	Body    string
 
