@@ -18,6 +18,7 @@ func (r *Responses) List(_ struct{}, reply *[]Response) error {
 	list := r.store.List()
 	for _, msg := range list {
 		response := Response{
+			Delay:   DelayDuration{msg.Delay},
 			Status:  msg.Response.Status,
 			Headers: fromHttpHeaders(msg.Headers),
 			Body:    msg.Body,
@@ -34,6 +35,7 @@ func (r *Responses) Push(arg Response, reply *bool) error {
 	}
 
 	msg := storage.Message{
+		Delay:    arg.Delay.Duration,
 		Headers:  arg.Headers.ToHttpHeaders(),
 		Body:     arg.Body,
 		Response: &storage.Response{Status: arg.Status},
