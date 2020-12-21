@@ -10,7 +10,7 @@ import (
 )
 
 func TestLoggerHandler(t *testing.T) {
-	r := httptest.NewRequest(http.MethodPost, "/base/../path?query", strings.NewReader("Hello"))
+	r := httptest.NewRequest(http.MethodPost, "/base/../path?query", strings.NewReader("Hell<>"))
 	r.Header.Set("Content-Type", "text/plain")
 	w := httptest.NewRecorder()
 
@@ -28,7 +28,7 @@ func TestLoggerHandler(t *testing.T) {
 	}
 
 	line := strings.TrimSpace(buffer.String())
-	if line != `{"Method":"POST","URI":"/base/../path?query","Headers":{"Content-Type":"text/plain"},"Body":"Hello"}` {
+	if line != `{"Method":"POST","URI":"/base/../path?query","Headers":{"Content-Type":"text/plain"},"Body":"Hell<>"}` {
 		t.Errorf("unexpected log: %v", line)
 	}
 }

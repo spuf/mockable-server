@@ -45,11 +45,14 @@ func (m *loggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Headers: headers,
 		Body:    body.String(),
 	}
-	line, err := json.Marshal(entry)
-	if err != nil {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(entry); err != nil {
 		panic(err)
 	}
-	m.logger.Printf("%s", string(line))
+
+	m.logger.Printf("%s", buf.String())
 
 	m.next.ServeHTTP(w, r)
 }
