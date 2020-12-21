@@ -122,7 +122,8 @@ func TestE2E(t *testing.T) {
 					"Content-Type": "text/plain",
 					"Extra-Header": "value"
 				},
-				"body": "Hello"
+				"body": "Hello",
+				"delay": "1ms"
 			}]
 		}`, `{
 			"id": null,
