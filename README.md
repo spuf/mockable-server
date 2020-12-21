@@ -137,7 +137,8 @@ Show queue content:
                 "Content-Type": "text/plain",
                 "Extra-Header": "value"
             },
-            "body": "Hello"
+            "body": "Hello",
+            "delay": 0
         },
         {
             "status": 200,
@@ -145,7 +146,8 @@ Show queue content:
                 "Content-Type": "text/plain",
                 "Extra-Header": "value"
             },
-            "body": "Hello"
+            "body": "Hello",
+            "delay": 0.001
         }
     ],
     "error": null
@@ -176,7 +178,8 @@ Push response:
             "Content-Type": "text/plain",
             "Extra-Header": "value"
         },
-        "body": "Hello"
+        "body": "Hello",
+        "delay": null
     }]    
 }              
 ``` 
