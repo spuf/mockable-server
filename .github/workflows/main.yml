@@ -22,8 +22,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: |
-            ${{ secrets.DOCKERHUB_REPOSITORY }}
+          images: ${{ secrets.DOCKERHUB_REPOSITORY }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
