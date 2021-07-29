@@ -24,7 +24,7 @@ FROM base as test
 RUN golangci-lint run ./...
 RUN go test -cover ./...
 
-CMD go test --tags e2e_test ./e2e_test
+CMD go test -v --tags e2e_test ./e2e_test
 
 ###
 FROM base as build

@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ "$DOCKER_TAG" = "latest" ]; then
-  VERSION="${SOURCE_COMMIT:0:7}"
-else
-  VERSION="$DOCKER_TAG"
-fi
-
-exec docker build -f "$DOCKERFILE_PATH" -t "$IMAGE_NAME" --build-arg "version=$VERSION" .
