@@ -18,6 +18,9 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
       -
+        name: Test
+        run: docker-compose run --rm -T testing
+      -
         name: Docker meta
         id: meta
         uses: docker/metadata-action@v3

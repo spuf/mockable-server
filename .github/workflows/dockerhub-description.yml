@@ -1,4 +1,4 @@
-name: Update Docker Hub Description
+name: DockerHub Description
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - .github/workflows/dockerhub-description.yml
 
 jobs:
-  dockerHubDescription:
+  update:
     runs-on: ubuntu-latest
     steps:
     -
