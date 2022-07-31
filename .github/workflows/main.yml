@@ -23,9 +23,6 @@ jobs:
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      -
-        name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
         
       -
         name: Test
@@ -53,7 +50,6 @@ jobs:
         with:
           images: |
             ${{ github.repository }}
-            ghcr.io/${{ github.repository }}
           tags: |
             type=edge
             type=semver,pattern={{version}}
