@@ -3,7 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -65,7 +65,7 @@ func (m *loggerHandler) drainBody(r *http.Request) (*bytes.Buffer, error) {
 	if err := r.Body.Close(); err != nil {
 		return nil, err
 	}
-	r.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
+	r.Body = io.NopCloser(bytes.NewReader(body.Bytes()))
 
 	return &body, nil
 }

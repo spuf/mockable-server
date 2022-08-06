@@ -2,7 +2,7 @@ package control
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -24,7 +24,7 @@ func TestHandlerHealthz(t *testing.T) {
 		t.Errorf("unexpected status: %v", got.StatusCode)
 	}
 
-	gotBody, _ := ioutil.ReadAll(got.Body)
+	gotBody, _ := io.ReadAll(got.Body)
 	if string(gotBody) != "OK" {
 		t.Errorf("unexpected body: %s", gotBody)
 	}
@@ -42,7 +42,7 @@ func TestHandlerJsonRpc1Path(t *testing.T) {
 		t.Errorf("unexpected status: %v", got.StatusCode)
 	}
 
-	gotBody, _ := ioutil.ReadAll(got.Body)
+	gotBody, _ := io.ReadAll(got.Body)
 	if string(gotBody) != "Not Found\n" {
 		t.Errorf("unexpected body: %s", gotBody)
 	}
@@ -64,7 +64,7 @@ func TestHandlerJsonRpc1Method(t *testing.T) {
 		t.Errorf("unexpected Allow value: %v", allow)
 	}
 
-	gotBody, _ := ioutil.ReadAll(got.Body)
+	gotBody, _ := io.ReadAll(got.Body)
 	if string(gotBody) != "Method Not Allowed\n" {
 		t.Errorf("unexpected body: %v", gotBody)
 	}
@@ -246,7 +246,7 @@ func TestHandlerResponses(t *testing.T) {
 				t.Errorf("unexpected response Content-Type value: %v", contentType)
 			}
 
-			gotBody, err := ioutil.ReadAll(got.Body)
+			gotBody, err := io.ReadAll(got.Body)
 			if err != nil {
 				t.Fatalf("ReadAll: %v", err)
 			}
@@ -363,7 +363,7 @@ func TestHandlerRequests(t *testing.T) {
 			}`,
 			wantBody: `{
 				"id": null,
-				"result": [ 
+				"result": [
 					{
 						"method": "GET",
 						"url": "/base/../path?query",
@@ -455,7 +455,7 @@ func TestHandlerRequests(t *testing.T) {
 				t.Errorf("unexpected response Content-Type value: %v", contentType)
 			}
 
-			gotBody, err := ioutil.ReadAll(got.Body)
+			gotBody, err := io.ReadAll(got.Body)
 			if err != nil {
 				t.Fatalf("ReadAll: %v", err)
 			}
