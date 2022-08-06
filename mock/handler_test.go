@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -24,7 +24,7 @@ func TestHandlerNoResponse(t *testing.T) {
 	if got.StatusCode != 501 {
 		t.Errorf("unexpected status code: %v", got.StatusCode)
 	}
-	gotBody, _ := ioutil.ReadAll(got.Body)
+	gotBody, _ := io.ReadAll(got.Body)
 	if string(gotBody) != "Not Implemented\n" {
 		t.Errorf("unexpected body: %v", string(gotBody))
 	}
@@ -75,7 +75,7 @@ func TestHandler(t *testing.T) {
 	if gotContentType != "text/plain" {
 		t.Errorf("unexpected status code: %v", gotContentType)
 	}
-	gotBody, _ := ioutil.ReadAll(got.Body)
+	gotBody, _ := io.ReadAll(got.Body)
 	if string(gotBody) != "Answer" {
 		t.Errorf("unexpected body: %v", string(gotBody))
 	}
