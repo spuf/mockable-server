@@ -1,5 +1,5 @@
-ARG go_version=1.19
-ARG alpine_version=3.16
+ARG go_version=1.20
+ARG alpine_version=3.17
 
 ###
 FROM golang:${go_version}-alpine${alpine_version} AS base
@@ -7,7 +7,7 @@ FROM golang:${go_version}-alpine${alpine_version} AS base
 # golangci deps
 RUN apk add --no-cache git build-base
 
-ARG golangci_version=1.48.0
+ARG golangci_version=1.52.2
 RUN wget -O- -nv 'https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh' | sh -s "v${golangci_version}"
 
 WORKDIR /go/src/mockable-server
