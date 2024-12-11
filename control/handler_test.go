@@ -123,6 +123,59 @@ func TestHandlerResponses(t *testing.T) {
 		},
 
 		{
+			name: "Responses.Push base64 encoded body",
+			body: `{
+				"method": "Responses.Push",
+				"params": [{
+					"status": 201,
+					"headers": {
+						"Content-Type": "text/plain",
+						"Extra-Header": "value"
+					},
+					"body": "SGVsbG8=",
+					"isBodyBase64": true
+				}]
+			}`,
+			wantBody: `{
+				"id": null,
+				"result": true,
+				"error": null
+			}`,
+			wantQueuesResponses: []storage.Message{
+				{
+					Headers: http.Header{
+						"Content-Type": {"text/plain"},
+						"Extra-Header": {"value"},
+					},
+					Body:     "Hello",
+					Response: &storage.Response{Status: 201},
+				},
+			},
+		},
+
+		{
+			name: "Responses.Push invalid base64 encoded body",
+			body: `{
+				"method": "Responses.Push",
+				"params": [{
+					"status": 201,
+					"headers": {
+						"Content-Type": "text/plain",
+						"Extra-Header": "value"
+					},
+					"body": "Hello",
+					"isBodyBase64": true
+				}]
+			}`,
+			wantBody: `{
+				"id": null,
+				"result": null,
+				"error": "failed to decode body from base64: illegal base64 data at input byte 4"
+			}`,
+			wantQueuesResponses: []storage.Message{},
+		},
+
+		{
 			name: "Responses.List empty",
 			body: `{
 				"method": "Responses.List",
@@ -162,13 +215,15 @@ func TestHandlerResponses(t *testing.T) {
 						"delay": 0,
 						"status": 201,
 						"headers": {"Content-Type": "text/plain","Extra-Header": "value"},
-						"body": "Hello"
+						"body": "Hello",
+						"isBodyBase64": false
 					},
 					{
 						"delay": 0,
 						"status": 0,
 						"headers": {},
-						"body": ""
+						"body": "",
+						"isBodyBase64": false
 					}
 				],
 				"error": null
