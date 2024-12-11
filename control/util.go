@@ -12,10 +12,11 @@ import (
 var ErrValidation = errors.New("validation")
 
 type Response struct {
-	Delay   DelayDuration `json:"delay"`
-	Status  int           `json:"status"`
-	Headers Headers       `json:"headers"`
-	Body    string        `json:"body"`
+	Delay        DelayDuration `json:"delay"`
+	Status       int           `json:"status"`
+	Headers      Headers       `json:"headers"`
+	Body         string        `json:"body"`
+	IsBodyBase64 bool          `json:"isBodyBase64"`
 }
 
 type Request struct {

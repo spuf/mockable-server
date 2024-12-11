@@ -188,4 +188,27 @@ Push response:
     "result": true,
     "error": null
 }
+```
+
+Push response with binary data:
+```json
+{
+    "method": "Responses.Push",
+    "params": [{
+        "status": 200,
+        "headers": {
+            "Content-Type": "text/plain",
+            "Extra-Header": "value"
+        },
+        "isBodyBase64": true,
+        "body": "SGVsbG8=",
+        "delay": null
+    }]    
+}              
 ``` 
+```json
+{
+    "result": true,
+    "error": null
+}
+```
