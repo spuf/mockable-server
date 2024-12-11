@@ -1,8 +1,8 @@
 package control
 
 import (
+	"encoding/base64"
 	"fmt"
-
 	"github.com/spuf/mockable-server/storage"
 )
 
@@ -34,10 +34,19 @@ func (r *Responses) Push(arg Response, reply *bool) error {
 		return fmt.Errorf("%w: status %d must be in [100; 600)", ErrValidation, arg.Status)
 	}
 
+	body := arg.Body
+	if arg.IsBodyBase64 {
+		decodedBody, err := base64.StdEncoding.DecodeString(arg.Body)
+		if err != nil {
+			return fmt.Errorf("failed to decode body from base64: %w", err)
+		}
+		body = string(decodedBody)
+	}
+
 	msg := storage.Message{
 		Delay:    arg.Delay.Duration,
 		Headers:  arg.Headers.ToHttpHeaders(),
-		Body:     arg.Body,
+		Body:     body,
 		Response: &storage.Response{Status: arg.Status},
 	}
 	if err := r.store.PushLast(msg); err != nil {
